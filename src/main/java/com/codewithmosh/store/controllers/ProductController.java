@@ -46,20 +46,22 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(
-            @RequestBody ProductDto request,
+            @RequestBody ProductDto productDto,
             UriComponentsBuilder uriBuilder
     ) {
-        var categoryId = request.getCategoryId();
-        var category = categoryRepository.findById(categoryId).orElse(null);
+        var category = categoryRepository.findById(productDto.getCategoryId()).orElse(null);
+        if (category == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
-        var product = productMapper.toEntity(request);
+        var product = productMapper.toEntity(productDto);
         product.setCategory(category);
         productRepository.save(product);
+        productDto.setId(product.getId());
 
-        var dto = productMapper.toDto(product);
-        var uri = uriBuilder.path("/products/{id}").buildAndExpand(dto.getId()).toUri();
+        var uri = uriBuilder.path("/products/{id}").buildAndExpand(productDto.getId()).toUri();
 
-        return ResponseEntity.created(uri).body(dto);
+        return ResponseEntity.created(uri).body(productDto);
     }
 
     @PutMapping("/{id}")
