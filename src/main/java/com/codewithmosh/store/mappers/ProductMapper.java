@@ -1,7 +1,6 @@
 package com.codewithmosh.store.mappers;
 
 import com.codewithmosh.store.dtos.ProductDto;
-import com.codewithmosh.store.dtos.UpdateProductRequest;
 import com.codewithmosh.store.entities.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,5 +13,6 @@ public interface ProductMapper {
 
     Product toEntity(ProductDto dto);
 
-    void update(UpdateProductRequest request, @MappingTarget Product product);
+    @Mapping(target = "id", ignore = true)
+    void update(ProductDto request, @MappingTarget Product product);
 }
