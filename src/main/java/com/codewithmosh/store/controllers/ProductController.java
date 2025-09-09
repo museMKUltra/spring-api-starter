@@ -86,4 +86,15 @@ public class ProductController {
 
         return ResponseEntity.ok(productMapper.toDto(product));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        var product = productRepository.findById(id).orElse(null);
+        if (product == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        productRepository.delete(product);
+        return ResponseEntity.noContent().build();
+    }
 }
