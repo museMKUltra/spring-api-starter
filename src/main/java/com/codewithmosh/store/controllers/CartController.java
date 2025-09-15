@@ -42,7 +42,7 @@ public class CartController {
             @PathVariable UUID cartId,
             @RequestBody AddItemToCartRequest request
     ) {
-        var cart = cartRepository.findById(cartId).orElse(null);
+        var cart = cartRepository.getCartWithItems(cartId).orElse(null);
         if (cart == null) {
             return ResponseEntity.notFound().build();
         }
