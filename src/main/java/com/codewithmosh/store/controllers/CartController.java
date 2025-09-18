@@ -74,15 +74,7 @@ public class CartController {
             @PathVariable("cartId") UUID cartId,
             @PathVariable("productId") Long productId
     ) {
-        var cart = cartRepository.getCartWithItems(cartId).orElse(null);
-        if (cart == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    Map.of("error", "Cart was not found")
-            );
-        }
-
-        cart.removeItem(productId);
-        cartRepository.save(cart);
+        cartService.removeItem(cartId, productId);
 
         return ResponseEntity.noContent().build();
     }

@@ -68,4 +68,14 @@ public class CartService {
 
         return cartMapper.toDto(cartItem);
     }
+
+    public void removeItem(UUID cartId, Long productId) {
+        var cart = cartRepository.getCartWithItems(cartId).orElse(null);
+        if (cart == null) {
+            throw new CartNotFoundException();
+        }
+
+        cart.removeItem(productId);
+        cartRepository.save(cart);
+    }
 }
