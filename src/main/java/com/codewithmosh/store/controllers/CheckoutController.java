@@ -4,8 +4,6 @@ import com.codewithmosh.store.dtos.CheckoutRequest;
 import com.codewithmosh.store.dtos.CheckoutResponse;
 import com.codewithmosh.store.dtos.ErrorDto;
 import com.codewithmosh.store.entities.Order;
-import com.codewithmosh.store.entities.OrderItem;
-import com.codewithmosh.store.entities.OrderStatus;
 import com.codewithmosh.store.repositories.CartRepository;
 import com.codewithmosh.store.repositories.OrderRepository;
 import com.codewithmosh.store.services.AuthService;
@@ -44,20 +42,7 @@ public class CheckoutController {
             );
         }
 
-        var order = new Order();
-        order.setCustomer(authService.getCurrentUser());
-        order.setStatus(OrderStatus.PENDING);
-        order.setTotalPrice(cart.getTotalPrice());
-
-        cart.getItems().forEach(item -> {
-            var orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(item.getProduct());
-            orderItem.setQuantity(item.getQuantity());
-            orderItem.setTotalPrice(item.getTotalPrice());
-            orderItem.setUnitPrice(item.getProduct().getPrice());
-            order.getItems().add(orderItem);
-        });
+        var order = Order.fromOrder(cart, authService.getCurrentUser());
 
         orderRepository.save(order);
 
