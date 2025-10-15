@@ -9,7 +9,7 @@ import com.codewithmosh.store.exceptions.ProductNotFoundException;
 import com.codewithmosh.store.mappers.CartMapper;
 import com.codewithmosh.store.repositories.CartRepository;
 import com.codewithmosh.store.repositories.ProductRepository;
-import com.codewithmosh.store.users.services.CartService;
+import com.codewithmosh.store.services.CartService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,4 +1,4 @@
-package com.codewithmosh.store.filters;
+package com.codewithmosh.store.auth;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
