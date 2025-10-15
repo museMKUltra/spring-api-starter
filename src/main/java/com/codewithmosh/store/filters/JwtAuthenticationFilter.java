@@ -1,6 +1,6 @@
 package com.codewithmosh.store.filters;
 
-import com.codewithmosh.store.services.JwtService;
+import com.codewithmosh.store.users.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -3,7 +3,7 @@ package com.codewithmosh.store.controllers;
 import com.codewithmosh.store.dtos.ErrorDto;
 import com.codewithmosh.store.dtos.OrderDto;
 import com.codewithmosh.store.exceptions.OrderNotFoundException;
-import com.codewithmosh.store.services.OrderService;
+import com.codewithmosh.store.users.services.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
