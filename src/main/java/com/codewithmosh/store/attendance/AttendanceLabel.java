@@ -20,9 +20,7 @@ public class AttendanceLabel {
     @Column(name = "id")
     private Long id;
 
-    @Size(max = 100)
-    @NotNull
-    @Column(name = "name", length = 100)
+    @Column(name = "name")
     private String name;
 
     @Column(name = "type")

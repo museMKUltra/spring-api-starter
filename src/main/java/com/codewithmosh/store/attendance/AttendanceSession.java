@@ -47,4 +47,9 @@ public class AttendanceSession {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public void setLabel(AttendanceLabel label) {
+        this.label = label;
+        label.getAttendanceSessions().add(this);
+    }
 }
