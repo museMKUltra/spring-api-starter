@@ -32,9 +32,6 @@ public class AttendanceLabel {
     @Column(name = "color")
     private String color;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     @OneToMany(mappedBy = "label")
     private Set<AttendanceSession> attendanceSessions = new HashSet<>();
 }
