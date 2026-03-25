@@ -12,7 +12,7 @@ class AttendanceService {
     private final AttendanceSessionRepository attendanceSessionRepository;
     private final AttendanceMapper attendanceMapper;
 
-    private AttendanceSession getAttendanceSession(SessionStatus status, User user) {
+    public AttendanceSession getAttendanceSession(SessionStatus status, User user) {
         var sessions = attendanceSessionRepository.findByUserAndStatus(user, status);
 
         return sessions.isEmpty() ? null : sessions.get(0);

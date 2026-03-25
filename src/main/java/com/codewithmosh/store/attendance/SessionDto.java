@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 public class SessionDto {
     private Long id;
     private LocalDateTime clockIn;
+    private LocalDateTime clockOut;
     private LocalDate workDate;
+    private Long workMinutes;
     private SessionStatus status;
     private String description;
     private LabelDto label;

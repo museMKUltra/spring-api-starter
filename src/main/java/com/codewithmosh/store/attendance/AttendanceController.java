@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Controller
@@ -69,6 +70,30 @@ class AttendanceController {
         if (description != null) {
             session.setDescription(description);
         }
+
+        attendanceSessionRepository.save(session);
+
+        return ResponseEntity.ok(attendanceMapper.toDto(session));
+    }
+
+    @PostMapping("/clock-out")
+    public ResponseEntity<?> clockOut() {
+        var user = authService.getCurrentUser();
+        var now = LocalDateTime.now();
+
+        var session = attendanceService.getAttendanceSession(SessionStatus.ACTIVE, user);
+        if (session == null) {
+            return ResponseEntity.badRequest().body(
+                    new ErrorDto("No active session found")
+            );
+        }
+
+        now.plusHours(2);
+        session.setClockOut(now);
+        session.setStatus(SessionStatus.COMPLETED);
+
+        var workMinutes = Duration.between(session.getClockIn(), session.getClockOut()).toMinutes();
+        session.setWorkMinutes(workMinutes);
 
         attendanceSessionRepository.save(session);
 
