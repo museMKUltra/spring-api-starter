@@ -50,7 +50,7 @@ public class User {
     )
     private Set<Product> favoriteProducts = new HashSet<>();
 
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "user")
     private Set<EmployeeRate> employeeRates = new HashSet<>();
 
     public void addAddress(Address address) {

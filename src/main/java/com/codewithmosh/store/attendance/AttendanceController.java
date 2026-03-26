@@ -85,6 +85,24 @@ class AttendanceController {
         session.setStatus(SessionStatus.COMPLETED);
         session.setWorkMinutes(workMinutes);
 
+        request = request == null ? new ClockInAndOutRequest() : request;
+
+        var labelId = request.getLabelId();
+        if (labelId != null) {
+            var label = attendanceLabelRepository.findById(labelId).orElse(null);
+            if (label == null) {
+                return ResponseEntity.badRequest().body(
+                        new ErrorDto("Label not found")
+                );
+            }
+            session.setLabel(label);
+        }
+
+        var description = request.getDescription();
+        if (description != null) {
+            session.setDescription(description);
+        }
+
         attendanceSessionRepository.save(session);
 
         return ResponseEntity.ok(attendanceMapper.toDto(session));

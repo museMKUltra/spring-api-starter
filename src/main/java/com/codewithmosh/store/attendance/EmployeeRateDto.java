@@ -7,8 +7,7 @@ import java.time.LocalDate;
 
 @Data
 public class EmployeeRateDto {
-    private Long employeeId;
+    private Long id;
     private BigDecimal hourlyRate;
     private LocalDate effectiveFrom;
-    private LocalDate effectiveTo;
 }
