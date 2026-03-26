@@ -43,7 +43,7 @@ class AttendanceController {
         return ResponseEntity.ok(session);
     }
 
-    @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class})
+    @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, NotDraftWorkSummaryException.class})
     public ResponseEntity<ErrorDto> handleNotFound(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));
     }
