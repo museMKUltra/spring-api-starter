@@ -2,7 +2,6 @@ package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.users.UserRepository;
-import com.codewithmosh.store.users.UserService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -19,7 +18,6 @@ import java.time.LocalDate;
 @Controller
 @RequestMapping("/employee-rates")
 public class EmployeeRatesController {
-    private final UserService userService;
     private final AuthService authService;
     private final UserRepository userRepository;
     private final EmployeeRateRepository employeeRateRepository;
@@ -34,9 +32,7 @@ public class EmployeeRatesController {
         var user = authService.getCurrentUser();
         var now = LocalDate.now();
 
-        employeeRateRepository.findByUserAndEffectiveToIsNull(user).ifPresent(employeeRate -> {
-            employeeRate.setEffectiveTo(now);
-        });
+        employeeRateRepository.findByUserAndEffectiveToIsNull(user).ifPresent(employeeRate -> employeeRate.setEffectiveTo(now));
 
         var employeeRate = new EmployeeRate();
         employeeRate.setEffectiveFrom(now);

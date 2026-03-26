@@ -2,8 +2,8 @@ package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.common.ErrorDto;
-import com.codewithmosh.store.users.UserService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,24 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.time.Duration;
 
+@AllArgsConstructor
 @Controller
 @RequestMapping("/attendance")
 class AttendanceController {
-    private final UserService userService;
     private final AuthService authService;
     private final AttendanceSessionRepository attendanceSessionRepository;
     private final AttendanceMapper attendanceMapper;
     private final AttendanceService attendanceService;
     private final AttendanceLabelRepository attendanceLabelRepository;
-
-    AttendanceController(UserService userService, AuthService authService, AttendanceSessionRepository attendanceSessionRepository, AttendanceMapper attendanceMapper, AttendanceService attendanceService, AttendanceLabelRepository attendanceLabelRepository) {
-        this.userService = userService;
-        this.authService = authService;
-        this.attendanceSessionRepository = attendanceSessionRepository;
-        this.attendanceMapper = attendanceMapper;
-        this.attendanceService = attendanceService;
-        this.attendanceLabelRepository = attendanceLabelRepository;
-    }
 
     @PostMapping("/clock-in")
     public ResponseEntity<?> clockIn(

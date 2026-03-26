@@ -1,6 +1,5 @@
 package com.codewithmosh.store.attendance;
 
-import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.users.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,6 @@ import java.time.temporal.ChronoUnit;
 @AllArgsConstructor
 @Service
 class AttendanceService {
-    private final AuthService authService;
     private final AttendanceSessionRepository attendanceSessionRepository;
     private final AttendanceMapper attendanceMapper;
 
