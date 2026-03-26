@@ -10,4 +10,5 @@ public class EmployeeRateDto {
     private Long id;
     private BigDecimal hourlyRate;
     private LocalDate effectiveFrom;
+    private LocalDate effectiveTo;
 }

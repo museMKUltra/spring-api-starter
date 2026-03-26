@@ -62,4 +62,14 @@ class AttendanceService {
 
         return attendanceMapper.toEmployeeRateDto(employeeRate);
     }
+
+    public EmployeeRateDto getEmployeeRate(Long rateId) {
+        var employeeRate = employeeRateRepository.findById(rateId).orElse(null);
+
+        if (employeeRate == null) {
+            throw new EmployeeRateNotFoundException();
+        }
+
+        return attendanceMapper.toEmployeeRateDto(employeeRate);
+    }
 }
