@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -18,6 +19,7 @@ class AttendanceService {
     private final AttendanceMapper attendanceMapper;
     private final AuthService authService;
     private final EmployeeRateRepository employeeRateRepository;
+    private final AttendanceLabelRepository attendanceLabelRepository;
 
     public AttendanceSession getAttendanceSession(SessionStatus status, User user) {
         var sessions = attendanceSessionRepository.findByUserAndStatus(user, status);
@@ -35,11 +37,11 @@ class AttendanceService {
         return response;
     }
 
-    public boolean hasActiveSession(User user) {
+    private boolean hasActiveSession(User user) {
         return getAttendanceSession(SessionStatus.ACTIVE, user) != null;
     }
 
-    public LocalDateTime getClockTime() {
+    private LocalDateTime getClockTime() {
         var now = LocalDateTime.now();
 
         return now.truncatedTo(ChronoUnit.SECONDS);
@@ -50,8 +52,7 @@ class AttendanceService {
         var user = authService.getCurrentUser();
         var now = LocalDate.now();
 
-        employeeRateRepository.findEffectiveRate(user)
-                .ifPresent(employeeRate -> employeeRate.setEffectiveTo(now));
+        employeeRateRepository.findEffectiveRate(user).ifPresent(employeeRate -> employeeRate.setEffectiveTo(now));
 
         var employeeRate = new EmployeeRate();
         employeeRate.setEffectiveFrom(now);
@@ -71,5 +72,61 @@ class AttendanceService {
         }
 
         return attendanceMapper.toEmployeeRateDto(employeeRate);
+    }
+
+    public SessionDto clockIn(Long labelId, String description) {
+        var user = authService.getCurrentUser();
+        var clockTime = getClockTime();
+
+        if (hasActiveSession(user)) {
+            throw new ActiveSessionExistException();
+        }
+
+        var session = new AttendanceSession();
+        session.setUser(user);
+        session.setClockIn(clockTime);
+        session.setWorkDate(clockTime.toLocalDate());
+        session.setStatus(SessionStatus.ACTIVE);
+
+        updateSession(labelId, description, session);
+
+        attendanceSessionRepository.save(session);
+
+        return attendanceMapper.toDto(session);
+    }
+
+    public SessionDto clockOut(Long labelId, String description) {
+        var user = authService.getCurrentUser();
+        var clockTime = getClockTime();
+
+        var session = getAttendanceSession(SessionStatus.ACTIVE, user);
+        if (session == null) {
+            throw new ActiveSessionNotFoundException();
+        }
+
+        var workMinutes = Duration.between(session.getClockIn(), clockTime).toMinutes();
+        session.setClockOut(clockTime);
+        session.setStatus(SessionStatus.COMPLETED);
+        session.setWorkMinutes(workMinutes);
+
+        updateSession(labelId, description, session);
+
+        attendanceSessionRepository.save(session);
+
+        return attendanceMapper.toDto(session);
+    }
+
+    private void updateSession(Long labelId, String description, AttendanceSession session) {
+        if (labelId != null) {
+            var label = attendanceLabelRepository.findById(labelId).orElse(null);
+            if (label == null) {
+                throw new LabelNotFoundException();
+            }
+            session.setLabel(label);
+        }
+
+        if (description != null) {
+            session.setDescription(description);
+        }
     }
 }
