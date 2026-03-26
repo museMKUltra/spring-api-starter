@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 
 @Controller
 @RequestMapping("/attendance")
@@ -35,10 +34,10 @@ class AttendanceController {
 
     @PostMapping("/clock-in")
     public ResponseEntity<?> clockIn(
-            @Valid @RequestBody(required = false) ClockInRequest request
+            @Valid @RequestBody(required = false) ClockInAndOutRequest request
     ) {
         var user = authService.getCurrentUser();
-        var now = LocalDateTime.now();
+        var clockTime = attendanceService.getClockTime();
 
         var hasActiveSession = attendanceService.hasActiveSession(user);
         if (hasActiveSession) {
@@ -49,11 +48,11 @@ class AttendanceController {
 
         var session = new AttendanceSession();
         session.setUser(user);
-        session.setClockIn(now);
-        session.setWorkDate(now.toLocalDate());
+        session.setClockIn(clockTime);
+        session.setWorkDate(clockTime.toLocalDate());
         session.setStatus(SessionStatus.ACTIVE);
 
-        request = request == null ? new ClockInRequest() : request;
+        request = request == null ? new ClockInAndOutRequest() : request;
 
         var labelId = request.getLabelId();
         if (labelId != null) {
@@ -77,9 +76,11 @@ class AttendanceController {
     }
 
     @PostMapping("/clock-out")
-    public ResponseEntity<?> clockOut() {
+    public ResponseEntity<?> clockOut(
+            @Valid @RequestBody(required = false) ClockInAndOutRequest request
+    ) {
         var user = authService.getCurrentUser();
-        var now = LocalDateTime.now();
+        var clockTime = attendanceService.getClockTime();
 
         var session = attendanceService.getAttendanceSession(SessionStatus.ACTIVE, user);
         if (session == null) {
@@ -88,11 +89,9 @@ class AttendanceController {
             );
         }
 
-        now.plusHours(2);
-        session.setClockOut(now);
+        var workMinutes = Duration.between(session.getClockIn(), clockTime).toMinutes();
+        session.setClockOut(clockTime);
         session.setStatus(SessionStatus.COMPLETED);
-
-        var workMinutes = Duration.between(session.getClockIn(), session.getClockOut()).toMinutes();
         session.setWorkMinutes(workMinutes);
 
         attendanceSessionRepository.save(session);

@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class ClockInRequest {
+public class ClockInAndOutRequest {
     private Long labelId;
 
     @Size(max = 255, message = "Description must be less than 255 characters.")

@@ -5,6 +5,9 @@ import com.codewithmosh.store.users.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 @AllArgsConstructor
 @Service
 class AttendanceService {
@@ -30,5 +33,11 @@ class AttendanceService {
 
     public boolean hasActiveSession(User user) {
         return getAttendanceSession(SessionStatus.ACTIVE, user) != null;
+    }
+
+    public LocalDateTime getClockTime() {
+        var now = LocalDateTime.now();
+
+        return now.truncatedTo(ChronoUnit.SECONDS);
     }
 }
