@@ -1,5 +1,6 @@
 package com.codewithmosh.store.users;
 
+import com.codewithmosh.store.attendance.EmployeeRate;
 import com.codewithmosh.store.products.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,6 +41,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @Builder.Default
     private List<Address> addresses = new ArrayList<>();
+
     @ManyToMany
     @JoinTable(
             name = "wishlist",
@@ -47,6 +49,9 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
     private Set<Product> favoriteProducts = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Set<EmployeeRate> employeeRates = new HashSet<>();
 
     public void addAddress(Address address) {
         addresses.add(address);
@@ -68,5 +73,10 @@ public class User {
                 "id = " + id + ", " +
                 "name = " + name + ", " +
                 "email = " + email + ")";
+    }
+
+    public void addEmployeeRate(EmployeeRate rate) {
+        employeeRates.add(rate);
+        rate.setUser(this);
     }
 }

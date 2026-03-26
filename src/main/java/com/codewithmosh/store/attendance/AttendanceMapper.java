@@ -7,4 +7,5 @@ import org.mapstruct.Mapping;
 public interface AttendanceMapper {
     SessionDto toDto(AttendanceSession session);
     LabelDto toLabelDto(AttendanceLabel label);
+    EmployeeRateDto toEmployeeRateDto(EmployeeRate employeeRate);
 }
