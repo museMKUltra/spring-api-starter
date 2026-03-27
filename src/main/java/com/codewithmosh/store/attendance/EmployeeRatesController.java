@@ -1,5 +1,6 @@
 package com.codewithmosh.store.attendance;
 
+import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.common.ErrorDto;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping("/employee-rates")
 public class EmployeeRatesController {
     private final AttendanceService attendanceService;
+    private final AuthService authService;
 
     @PostMapping
     public ResponseEntity<EmployeeRateDto> createEmployeeRate(
@@ -31,6 +33,14 @@ public class EmployeeRatesController {
             @PathVariable Long rateId
     ) {
         var employeeRate = attendanceService.getEmployeeRate(rateId);
+
+        return ResponseEntity.ok(employeeRate);
+    }
+
+    @GetMapping("/current")
+    public ResponseEntity<EmployeeRateDto> getCurrentEmployeeRate() {
+        var user = authService.getCurrentUser();
+        var employeeRate = attendanceService.getCurrentEmployeeRate(user);
 
         return ResponseEntity.ok(employeeRate);
     }

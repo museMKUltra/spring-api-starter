@@ -75,6 +75,16 @@ class AttendanceService {
         return attendanceMapper.toEmployeeRateDto(employeeRate);
     }
 
+    public EmployeeRateDto getCurrentEmployeeRate(User user) {
+        var employeeRate = employeeRateRepository.findEffectiveRate(user).orElse(null);
+
+        if (employeeRate == null) {
+            throw new EmployeeRateNotFoundException();
+        }
+
+        return attendanceMapper.toEmployeeRateDto(employeeRate);
+    }
+
     public SessionDto clockIn(Long labelId, String description) {
         var user = authService.getCurrentUser();
         var clockTime = getClockTime();
