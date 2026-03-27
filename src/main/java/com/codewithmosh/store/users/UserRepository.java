@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "on ws.year = :year and ws.month = :month and ws.status = :status " +
             "where u.id = :userId"
     )
-    Optional<SummaryDto> findExpectedSummary(
+    Optional<SummaryDto> findWorkSummary(
             @Param("userId") Long userId,
             @Param("year") Integer year,
             @Param("month") Short month,

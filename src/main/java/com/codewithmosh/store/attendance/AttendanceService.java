@@ -63,14 +63,14 @@ class AttendanceService {
         var year = workDate.getYear();
         var month = (short) workDate.getMonthValue();
 
-        var expectedSummary = userRepository
-                .findExpectedSummary(userId, year, month, SummaryStatus.DRAFT)
+        var workSummary = userRepository
+                .findWorkSummary(userId, year, month, SummaryStatus.DRAFT)
                 .orElse(null);
 
         var response = new ActiveSessionResponse();
         response.setActive(hasSession && session.getStatus() == SessionStatus.ACTIVE);
         response.setSession(attendanceMapper.toDto(session));
-        response.setSummary(expectedSummary);
+        response.setSummary(workSummary);
 
         return response;
     }
@@ -86,7 +86,9 @@ class AttendanceService {
         var user = authService.getCurrentUser();
         var now = LocalDate.now();
 
-        employeeRateRepository.findEffectiveRate(user).ifPresent(employeeRate -> employeeRate.setEffectiveTo(now));
+        employeeRateRepository
+                .findEffectiveRate(user.getId())
+                .ifPresent(employeeRate -> employeeRate.setEffectiveTo(now));
 
         var employeeRate = new EmployeeRate();
         employeeRate.setEffectiveFrom(now);
@@ -109,7 +111,7 @@ class AttendanceService {
     }
 
     public EmployeeRateDto getCurrentEmployeeRate(User user) {
-        var employeeRate = employeeRateRepository.findEffectiveRate(user).orElse(null);
+        var employeeRate = employeeRateRepository.findEffectiveRate(user.getId()).orElse(null);
 
         if (employeeRate == null) {
             throw new EmployeeRateNotFoundException();

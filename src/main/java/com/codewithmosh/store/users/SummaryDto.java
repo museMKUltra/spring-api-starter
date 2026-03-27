@@ -1,12 +1,10 @@
 package com.codewithmosh.store.users;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-@AllArgsConstructor
 public class SummaryDto {
     private final BigDecimal minutesPerHour = new BigDecimal("60");
 
@@ -17,6 +15,13 @@ public class SummaryDto {
 
     private BigDecimal hourlyRate;
     private Long totalMinutes;
+
+    public SummaryDto(Integer year, Short month, BigDecimal hourlyRate, Long totalMinutes) {
+        this.year = year;
+        this.month = month;
+        this.hourlyRate = hourlyRate;
+        this.totalMinutes = totalMinutes;
+    }
 
     public BigDecimal getHourlyRate() {
         return hourlyRate == null ? BigDecimal.ZERO : hourlyRate;
