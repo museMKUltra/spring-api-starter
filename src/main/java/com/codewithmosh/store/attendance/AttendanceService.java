@@ -1,6 +1,7 @@
 package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
+import com.codewithmosh.store.users.SummaryDto;
 import com.codewithmosh.store.users.User;
 import com.codewithmosh.store.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -198,5 +199,16 @@ class AttendanceService {
         }
 
         return attendanceMapper.toWorkSummaryDto(workSummary);
+    }
+
+    public SummaryDto previewWorkSummary(Integer year, Short month) {
+        var userId = AuthService.getCurrentUserId();
+        var startDate = LocalDate.of(year, month, 1);
+        var endDate = startDate.plusMonths(1);
+
+        var totalMinutes = attendanceSessionRepository.calculateTotalWorkMinutes(userId, SessionStatus.COMPLETED, startDate, endDate);
+        var hourlyRate = employeeRateRepository.getEffectiveHourlyRate(userId);
+
+        return new SummaryDto(year, month, hourlyRate, totalMinutes);
     }
 }

@@ -2,6 +2,8 @@ package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.common.ErrorDto;
+import com.codewithmosh.store.users.SummaryDto;
+import com.codewithmosh.store.users.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,9 @@ class WorkSummaryController {
     private final AuthService authService;
     private final AttendanceMapper attendanceMapper;
     private final AttendanceService attendanceService;
+    private final AttendanceSessionRepository attendanceSessionRepository;
+    private final UserRepository userRepository;
+    private final EmployeeRateRepository employeeRateRepository;
 
     @GetMapping
     public ResponseEntity<WorkSummaryDto> getWorkSummary(
@@ -28,6 +33,16 @@ class WorkSummaryController {
         var workSummaryDto = attendanceService.getWorkSummary(year, month);
 
         return ResponseEntity.ok(workSummaryDto);
+    }
+
+    @GetMapping("/preview")
+    public ResponseEntity<SummaryDto> previewWorkSummary(
+            @RequestParam Integer year,
+            @RequestParam Short month
+    ) {
+        var summaryDto = attendanceService.previewWorkSummary(year, month);
+
+        return ResponseEntity.ok(summaryDto);
     }
 
     @ExceptionHandler(WorkSummaryNotFoundException.class)

@@ -1,12 +1,28 @@
 package com.codewithmosh.store.attendance;
 
-import com.codewithmosh.store.users.User;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface AttendanceSessionRepository extends CrudRepository<AttendanceSession, Long> {
     @EntityGraph(attributePaths = "label")
     List<AttendanceSession> findByUserIdAndStatus(Long userId, SessionStatus status);
+
+    @Query("select coalesce(sum(a.workMinutes), 0)" +
+            "from AttendanceSession a " +
+            "where a.user.id = :userId " +
+            "and a.status = :status " +
+            "and a.workDate >= :startDate " +
+            "and a.workDate < :endDate")
+    Long calculateTotalWorkMinutes(
+            @Param("userId") Long userId,
+            @Param("status") SessionStatus status,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
