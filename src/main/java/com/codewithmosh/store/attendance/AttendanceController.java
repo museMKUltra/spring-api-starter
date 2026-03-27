@@ -17,23 +17,23 @@ class AttendanceController {
     private final AttendanceService attendanceService;
 
     @PostMapping("/clock-in")
-    public ResponseEntity<SessionDto> clockIn(
+    public ResponseEntity<ActiveSessionResponse> clockIn(
             @Valid @RequestBody(required = false) ClockInAndOutRequest request
     ) {
         request = request == null ? new ClockInAndOutRequest() : request;
-        var sessionDto = attendanceService.clockIn(request.getLabelId(), request.getDescription());
+        var activeSessionResponse = attendanceService.clockIn(request.getLabelId(), request.getDescription());
 
-        return ResponseEntity.ok(sessionDto);
+        return ResponseEntity.ok(activeSessionResponse);
     }
 
     @PostMapping("/clock-out")
-    public ResponseEntity<SessionDto> clockOut(
+    public ResponseEntity<ActiveSessionResponse> clockOut(
             @Valid @RequestBody(required = false) ClockInAndOutRequest request
     ) {
         request = request == null ? new ClockInAndOutRequest() : request;
-        var sessionDto = attendanceService.clockOut(request.getLabelId(), request.getDescription());
+        var activeSessionResponse = attendanceService.clockOut(request.getLabelId(), request.getDescription());
 
-        return ResponseEntity.ok(sessionDto);
+        return ResponseEntity.ok(activeSessionResponse);
     }
 
     @GetMapping("/active-session")

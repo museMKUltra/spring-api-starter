@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -55,6 +54,10 @@ class AttendanceService {
         var userId = authService.getCurrentUserId();
         var session = getAttendanceSession(SessionStatus.ACTIVE, userId);
 
+        return getActiveSessionResponse(session, userId);
+    }
+
+    private ActiveSessionResponse getActiveSessionResponse(AttendanceSession session, Long userId) {
         var hasSession = session != null;
         var workDate = hasSession ? session.getWorkDate() : LocalDate.now();
         var year = workDate.getYear();
@@ -65,7 +68,7 @@ class AttendanceService {
                 .orElse(null);
 
         var response = new ActiveSessionResponse();
-        response.setActive(hasSession);
+        response.setActive(hasSession && session.getStatus() == SessionStatus.ACTIVE);
         response.setSession(attendanceMapper.toDto(session));
         response.setSummary(expectedSummary);
 
@@ -115,47 +118,33 @@ class AttendanceService {
         return attendanceMapper.toEmployeeRateDto(employeeRate);
     }
 
-    public SessionDto clockIn(Long labelId, String description) {
+    @Transactional
+    public ActiveSessionResponse clockIn(Long labelId, String description) {
         var user = authService.getCurrentUser();
-        var clockTime = getClockTime();
-
         if (hasActiveSessionAndAutoCancel(user)) {
             throw new ActiveSessionExistException();
         }
 
-        var session = new AttendanceSession();
-        session.setUser(user);
-        session.setClockIn(clockTime);
-        session.setWorkDate(clockTime.toLocalDate());
-        session.setStatus(SessionStatus.ACTIVE);
-
+        var session = AttendanceSession.createClockInSession(user);
         updateSession(labelId, description, session);
-
         attendanceSessionRepository.save(session);
 
-        return attendanceMapper.toDto(session);
+        return getActiveSessionResponse(session, user.getId());
     }
 
     @Transactional
-    public SessionDto clockOut(Long labelId, String description) {
+    public ActiveSessionResponse clockOut(Long labelId, String description) {
         var user = authService.getCurrentUser();
-        var clockTime = getClockTime().plusMinutes(50);
-
         var session = getAttendanceSession(SessionStatus.ACTIVE, user.getId());
         if (session == null) {
             throw new ActiveSessionNotFoundException();
         }
 
-        var workMinutes = Duration.between(session.getClockIn(), clockTime).toMinutes();
-        session.setClockOut(clockTime);
-        session.setStatus(SessionStatus.COMPLETED);
-        session.setWorkMinutes(workMinutes);
-
+        AttendanceSession.updateClockOutSession(session);
         updateSession(labelId, description, session);
-
         findOrCreateWorkSummary(user, session);
 
-        return attendanceMapper.toDto(session);
+        return getActiveSessionResponse(session, user.getId());
     }
 
     private void findOrCreateWorkSummary(User user, AttendanceSession session) {

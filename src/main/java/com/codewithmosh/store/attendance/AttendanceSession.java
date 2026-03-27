@@ -5,8 +5,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Getter
 @Setter
@@ -47,6 +49,33 @@ public class AttendanceSession {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    private static LocalDateTime getClockTime() {
+        var now = LocalDateTime.now();
+
+        return now.truncatedTo(ChronoUnit.SECONDS);
+    }
+
+    public static AttendanceSession createClockInSession(User user) {
+        var clockTime = getClockTime();
+        var session = new AttendanceSession();
+        session.setUser(user);
+        session.setClockIn(clockTime);
+        session.setWorkDate(clockTime.toLocalDate());
+        session.setStatus(SessionStatus.ACTIVE);
+
+        return session;
+    }
+
+    public static AttendanceSession updateClockOutSession(AttendanceSession session) {
+        var clockTime = getClockTime();
+        var workMinutes = Duration.between(session.getClockIn(), clockTime).toMinutes();
+        session.setClockOut(clockTime);
+        session.setStatus(SessionStatus.COMPLETED);
+        session.setWorkMinutes(workMinutes);
+
+        return session;
+    }
 
     public void setLabel(AttendanceLabel label) {
         this.label = label;
