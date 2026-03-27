@@ -21,12 +21,11 @@ class WorkSummaryController {
     private final AttendanceService attendanceService;
 
     @GetMapping
-    public ResponseEntity<?> getWorkSummary(
+    public ResponseEntity<WorkSummaryDto> getWorkSummary(
             @RequestParam Integer year,
             @RequestParam Short month
     ) {
-        var user = authService.getCurrentUser();
-        var workSummaryDto = attendanceService.getWorkSummary(user, year, month);
+        var workSummaryDto = attendanceService.getWorkSummary(year, month);
 
         return ResponseEntity.ok(workSummaryDto);
     }

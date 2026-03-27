@@ -188,8 +188,9 @@ class AttendanceService {
         }
     }
 
-    public WorkSummaryDto getWorkSummary(User user, Integer year, Short month) {
-        var workSummary = workSummaryRepository.findWorkSummary(user.getId(), year, month).orElse(null);
+    public WorkSummaryDto getWorkSummary(Integer year, Short month) {
+        var userId = AuthService.getCurrentUserId();
+        var workSummary = workSummaryRepository.findWorkSummary(userId, year, month).orElse(null);
         if (workSummary == null) {
             throw new WorkSummaryNotFoundException();
         }
