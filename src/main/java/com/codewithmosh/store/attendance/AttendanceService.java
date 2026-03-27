@@ -25,13 +25,13 @@ class AttendanceService {
     private final WorkSummaryRepository workSummaryRepository;
     private final UserRepository userRepository;
 
-    private List<AttendanceSession> getAttendanceSessions(SessionStatus status, User user) {
-        return attendanceSessionRepository.findByUserAndStatus(user, status);
+    private List<AttendanceSession> getAttendanceSessions(SessionStatus status, Long userId) {
+        return attendanceSessionRepository.findByUserIdAndStatus(userId, status);
     }
 
     @Transactional
     protected boolean hasActiveSessionAndAutoCancel(User user) {
-        var sessions = getAttendanceSessions(SessionStatus.ACTIVE, user);
+        var sessions = getAttendanceSessions(SessionStatus.ACTIVE, user.getId());
 
         if (sessions.isEmpty()) {
             return false;
@@ -45,14 +45,15 @@ class AttendanceService {
         return true;
     }
 
-    public AttendanceSession getAttendanceSession(SessionStatus status, User user) {
-        var sessions = getAttendanceSessions(status, user);
+    public AttendanceSession getAttendanceSession(SessionStatus status, Long userId) {
+        var sessions = getAttendanceSessions(status, userId);
 
         return sessions.isEmpty() ? null : sessions.get(sessions.size() - 1);
     }
 
-    public ActiveSessionResponse getActiveSession(User user) {
-        var session = getAttendanceSession(SessionStatus.ACTIVE, user);
+    public ActiveSessionResponse getActiveSession() {
+        var userId = authService.getCurrentUserId();
+        var session = getAttendanceSession(SessionStatus.ACTIVE, userId);
 
         var hasSession = session != null;
         var workDate = hasSession ? session.getWorkDate() : LocalDate.now();
@@ -60,7 +61,7 @@ class AttendanceService {
         var month = (short) workDate.getMonthValue();
 
         var expectedSummary = userRepository
-                .findExpectedSummary(user.getId(), year, month, SummaryStatus.DRAFT)
+                .findExpectedSummary(userId, year, month, SummaryStatus.DRAFT)
                 .orElse(null);
 
         var response = new ActiveSessionResponse();
@@ -140,7 +141,7 @@ class AttendanceService {
         var user = authService.getCurrentUser();
         var clockTime = getClockTime().plusMinutes(50);
 
-        var session = getAttendanceSession(SessionStatus.ACTIVE, user);
+        var session = getAttendanceSession(SessionStatus.ACTIVE, user.getId());
         if (session == null) {
             throw new ActiveSessionNotFoundException();
         }

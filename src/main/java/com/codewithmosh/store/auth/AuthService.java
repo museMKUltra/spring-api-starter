@@ -16,11 +16,14 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    public User getCurrentUser() {
+    public static Long getCurrentUserId() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        var userId = (Long) authentication.getPrincipal();
 
-        return userRepository.findById(userId).orElse(null);
+        return (Long) authentication.getPrincipal();
+    }
+
+    public User getCurrentUser() {
+        return userRepository.findById(getCurrentUserId()).orElse(null);
     }
 
     public LoginResponse login(LoginRequest request) {

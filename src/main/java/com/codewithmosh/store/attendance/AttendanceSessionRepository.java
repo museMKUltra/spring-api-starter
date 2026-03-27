@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface AttendanceSessionRepository extends CrudRepository<AttendanceSession, Long> {
     @EntityGraph(attributePaths = "label")
-    List<AttendanceSession> findByUserAndStatus(User user, SessionStatus status);
+    List<AttendanceSession> findByUserIdAndStatus(Long userId, SessionStatus status);
 }

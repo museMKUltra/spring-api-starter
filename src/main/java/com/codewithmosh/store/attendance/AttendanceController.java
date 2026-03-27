@@ -38,7 +38,7 @@ class AttendanceController {
 
     @GetMapping("/active-session")
     public ResponseEntity<ActiveSessionResponse> getActiveSession() {
-        var session = attendanceService.getActiveSession(authService.getCurrentUser());
+        var session = attendanceService.getActiveSession();
 
         return ResponseEntity.ok(session);
     }
