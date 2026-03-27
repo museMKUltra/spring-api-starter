@@ -13,7 +13,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select u from User u where u.email = ?1")
     Optional<User> findByEmail(String email);
 
-    @Query("select new com.codewithmosh.store.users.SummaryDto(er.hourlyRate, ws.totalMinutes) from User u " +
+    @Query("select new com.codewithmosh.store.users.SummaryDto(:year, :month, er.hourlyRate, ws.totalMinutes) from User u " +
             "left join u.employeeRates er " +
             "on er.effectiveFrom <= current_date and (er.effectiveTo is null or er.effectiveTo > current_date) " +
             "left join u.workSummaries ws " +
