@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @AllArgsConstructor
 @Service
@@ -22,10 +23,30 @@ class AttendanceService {
     private final AttendanceLabelRepository attendanceLabelRepository;
     private final WorkSummaryRepository workSummaryRepository;
 
-    public AttendanceSession getAttendanceSession(SessionStatus status, User user) {
-        var sessions = attendanceSessionRepository.findByUserAndStatus(user, status);
+    private List<AttendanceSession> getAttendanceSessions(SessionStatus status, User user) {
+        return attendanceSessionRepository.findByUserAndStatus(user, status);
+    }
 
-        return sessions.isEmpty() ? null : sessions.get(0);
+    @Transactional
+    protected boolean hasActiveSessionAndAutoCancel(User user) {
+        var sessions = getAttendanceSessions(SessionStatus.ACTIVE, user);
+
+        if (sessions.isEmpty()) {
+            return false;
+        }
+
+        var lastIndex = sessions.size() - 1;
+        for (int i = 0; i < lastIndex; i++) {
+            sessions.get(i).setStatus(SessionStatus.CANCELLED);
+            attendanceSessionRepository.save(sessions.get(i));
+        }
+        return true;
+    }
+
+    public AttendanceSession getAttendanceSession(SessionStatus status, User user) {
+        var sessions = getAttendanceSessions(status, user);
+
+        return sessions.isEmpty() ? null : sessions.get(sessions.size() - 1);
     }
 
     public ActiveSessionResponse getActiveSession(User user) {
@@ -36,10 +57,6 @@ class AttendanceService {
         response.setSession(attendanceMapper.toDto(session));
 
         return response;
-    }
-
-    private boolean hasActiveSession(User user) {
-        return getAttendanceSession(SessionStatus.ACTIVE, user) != null;
     }
 
     private LocalDateTime getClockTime() {
@@ -89,7 +106,7 @@ class AttendanceService {
         var user = authService.getCurrentUser();
         var clockTime = getClockTime();
 
-        if (hasActiveSession(user)) {
+        if (hasActiveSessionAndAutoCancel(user)) {
             throw new ActiveSessionExistException();
         }
 
