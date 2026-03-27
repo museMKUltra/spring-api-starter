@@ -185,4 +185,13 @@ class AttendanceService {
             session.setDescription(description);
         }
     }
+
+    public WorkSummaryDto getWorkSummary(User user, Integer year, Short month) {
+        var workSummary = workSummaryRepository.findWorkSummary(user.getId(), year, month).orElse(null);
+        if (workSummary == null) {
+            throw new WorkSummaryNotFoundException();
+        }
+
+        return attendanceMapper.toWorkSummaryDto(workSummary);
+    }
 }
