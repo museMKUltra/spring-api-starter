@@ -2,6 +2,7 @@ package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.users.User;
+import com.codewithmosh.store.users.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ class AttendanceService {
     private final EmployeeRateRepository employeeRateRepository;
     private final AttendanceLabelRepository attendanceLabelRepository;
     private final WorkSummaryRepository workSummaryRepository;
+    private final UserRepository userRepository;
 
     private List<AttendanceSession> getAttendanceSessions(SessionStatus status, User user) {
         return attendanceSessionRepository.findByUserAndStatus(user, status);
@@ -52,9 +54,19 @@ class AttendanceService {
     public ActiveSessionResponse getActiveSession(User user) {
         var session = getAttendanceSession(SessionStatus.ACTIVE, user);
 
+        var hasSession = session != null;
+        var workDate = hasSession ? session.getWorkDate() : LocalDate.now();
+        var year = workDate.getYear();
+        var month = (short) workDate.getMonthValue();
+
+        var expectedSummary = userRepository
+                .findExpectedSummary(user.getId(), year, month, SummaryStatus.DRAFT)
+                .orElse(null);
+
         var response = new ActiveSessionResponse();
-        response.setActive(session != null);
+        response.setActive(hasSession);
         response.setSession(attendanceMapper.toDto(session));
+        response.setSummary(expectedSummary);
 
         return response;
     }
