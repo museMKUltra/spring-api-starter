@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -13,15 +12,12 @@ public interface AttendanceSessionRepository extends CrudRepository<AttendanceSe
     @EntityGraph(attributePaths = "label")
     List<AttendanceSession> findByUserIdAndStatus(Long userId, SessionStatus status);
 
-    @Query("select coalesce(sum(a.workMinutes), 0)" +
-            "from AttendanceSession a " +
+    @Query("select a from AttendanceSession a " +
             "where a.user.id = :userId " +
-            "and a.status = :status " +
             "and a.workDate >= :startDate " +
             "and a.workDate < :endDate")
-    Long calculateTotalWorkMinutes(
+    List<AttendanceSession> getSessionsForPeriod(
             @Param("userId") Long userId,
-            @Param("status") SessionStatus status,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );

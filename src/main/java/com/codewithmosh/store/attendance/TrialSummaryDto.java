@@ -4,17 +4,18 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 public class TrialSummaryDto {
     private final BigDecimal minutesPerHour = new BigDecimal("60");
-
+    private List<AttendanceSession> sessions;
+    private EmployeeRate employeeRate;
     @Getter
     private Long id;
     @Getter
     private Integer year;
     @Getter
     private Short month;
-
     private BigDecimal hourlyRate;
     private Long totalMinutes;
 
@@ -26,12 +27,29 @@ public class TrialSummaryDto {
         this.totalMinutes = totalMinutes;
     }
 
+    public TrialSummaryDto(Long id, Integer year, Short month, EmployeeRate employeeRate, List<AttendanceSession> sessions) {
+        this.id = id;
+        this.year = year;
+        this.month = month;
+        this.employeeRate = employeeRate;
+        this.sessions = sessions;
+    }
+
     public BigDecimal getHourlyRate() {
-        return hourlyRate == null ? BigDecimal.ZERO : hourlyRate;
+        if (employeeRate == null) {
+            return hourlyRate == null ? BigDecimal.ZERO : hourlyRate;
+        }
+        return employeeRate.getHourlyRate();
     }
 
     public Long getTotalMinutes() {
-        return totalMinutes == null ? 0 : totalMinutes;
+        if (sessions == null) {
+            return totalMinutes == null ? 0 : totalMinutes;
+        }
+
+        return sessions.stream()
+                .filter(s -> s.getStatus() == SessionStatus.COMPLETED)
+                .mapToLong(AttendanceSession::getWorkMinutes).sum();
     }
 
     public BigDecimal getTotalHours() {
@@ -42,5 +60,9 @@ public class TrialSummaryDto {
     public BigDecimal getSalaryAmount() {
         return getTotalHours().multiply(getHourlyRate())
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public boolean hasActiveSessions() {
+        return sessions != null && sessions.stream().anyMatch(s -> s.getStatus() == SessionStatus.ACTIVE);
     }
 }
