@@ -16,7 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select new com.codewithmosh.store.attendance.TrialSummaryDto(ws.id, :year, :month, er.hourlyRate, ws.totalMinutes) from User u " +
             "left join u.employeeRates er " +
-            "on er.effectiveFrom <= current_date and (er.effectiveTo is null or er.effectiveTo > current_date) " +
+            "on er.effectiveFrom <= current_date and er.effectiveTo is null " +
             "left join u.workSummaries ws " +
             "on ws.year = :year and ws.month = :month and ws.status = :status " +
             "where u.id = :userId"

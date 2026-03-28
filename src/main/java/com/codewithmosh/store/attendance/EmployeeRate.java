@@ -20,7 +20,6 @@ public class EmployeeRate {
     @Column(name = "id")
     private Long id;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
