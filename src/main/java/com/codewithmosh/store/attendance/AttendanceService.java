@@ -242,6 +242,10 @@ class AttendanceService {
         var month = summary.getMonth();
         var trialSummary = getTrialSummary(year, month, userId, summary.getId());
 
+        if (trialSummary.hasActiveSessions()) {
+            throw new ActiveSessionExistException();
+        }
+
         summary.setHourlyRate(trialSummary.getHourlyRate());
         summary.setTotalMinutes(trialSummary.getTotalMinutes());
         summary.setSalaryAmount(trialSummary.getSalaryAmount());
