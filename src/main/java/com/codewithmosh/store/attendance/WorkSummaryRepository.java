@@ -14,4 +14,6 @@ public interface WorkSummaryRepository extends CrudRepository<WorkSummary, Long>
 
     @Query("select w from WorkSummary w where w.user.id = :userId and w.year = :year and w.month = :month and w.status = :status")
     Optional<WorkSummary> findWorkSummaryWithStatus(@Param("userId") Long userId, @Param("year") Integer year, @Param("month") Short month, @Param("status") SummaryStatus status);
+
+    Optional<WorkSummary> findByIdAndStatus(Long summaryId, SummaryStatus status);
 }

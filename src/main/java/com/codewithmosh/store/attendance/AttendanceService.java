@@ -1,7 +1,6 @@
 package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
-import com.codewithmosh.store.users.SummaryDto;
 import com.codewithmosh.store.users.User;
 import com.codewithmosh.store.users.UserRepository;
 import jakarta.transaction.Transactional;
@@ -64,14 +63,14 @@ class AttendanceService {
         var year = workDate.getYear();
         var month = (short) workDate.getMonthValue();
 
-        var workSummary = userRepository
-                .findWorkSummary(userId, year, month, SummaryStatus.DRAFT)
+        var trialSummary = userRepository
+                .findTrialSummary(userId, year, month, SummaryStatus.DRAFT)
                 .orElse(null);
 
         var response = new ActiveSessionResponse();
         response.setActive(hasSession && session.getStatus() == SessionStatus.ACTIVE);
         response.setSession(attendanceMapper.toDto(session));
-        response.setSummary(workSummary);
+        response.setSummary(trialSummary);
 
         return response;
     }
@@ -201,14 +200,27 @@ class AttendanceService {
         return attendanceMapper.toWorkSummaryDto(workSummary);
     }
 
-    public SummaryDto previewWorkSummary(Integer year, Short month) {
-        var userId = AuthService.getCurrentUserId();
+    private TrialSummaryDto getTrialSummary(Integer year, Short month, Long userId, WorkSummary summary) {
         var startDate = LocalDate.of(year, month, 1);
         var endDate = startDate.plusMonths(1);
 
         var totalMinutes = attendanceSessionRepository.calculateTotalWorkMinutes(userId, SessionStatus.COMPLETED, startDate, endDate);
         var hourlyRate = employeeRateRepository.getEffectiveHourlyRate(userId);
 
-        return new SummaryDto(year, month, hourlyRate, totalMinutes);
+        return new TrialSummaryDto(summary.getId(), year, month, hourlyRate, totalMinutes);
+    }
+
+    public TrialSummaryDto previewWorkSummary(Integer year, Short month) {
+        var userId = AuthService.getCurrentUserId();
+
+        var summary = workSummaryRepository.findWorkSummaryWithStatus(userId, year, month, SummaryStatus.DRAFT).orElse(null);
+        if (summary == null) {
+            throw new WorkSummaryNotFoundException();
+        }
+        if (summary.getStatus() != SummaryStatus.DRAFT) {
+            throw new NotDraftWorkSummaryException();
+        }
+
+        return getTrialSummary(year, month, userId, summary);
     }
 }
