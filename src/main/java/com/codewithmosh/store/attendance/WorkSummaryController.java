@@ -41,6 +41,15 @@ class WorkSummaryController {
         return ResponseEntity.ok(summaryDto);
     }
 
+    @PostMapping("/{summaryId}/confirm")
+    public ResponseEntity<WorkSummaryDto> confirmWorkSummary(
+            @PathVariable Long summaryId
+    ) {
+        var workSummaryDto = attendanceService.confirmWorkSummary(summaryId);
+
+        return ResponseEntity.ok(workSummaryDto);
+    }
+
     @ExceptionHandler(WorkSummaryNotFoundException.class)
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));

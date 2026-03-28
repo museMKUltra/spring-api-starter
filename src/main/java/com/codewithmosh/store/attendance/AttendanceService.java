@@ -223,4 +223,27 @@ class AttendanceService {
 
         return getTrialSummary(year, month, userId, summary);
     }
+
+    public WorkSummaryDto confirmWorkSummary(Long summaryId) {
+        var summary = workSummaryRepository.findByIdAndStatus(summaryId, SummaryStatus.DRAFT).orElse(null);
+        if (summary == null) {
+            throw new WorkSummaryNotFoundException();
+        }
+        if (summary.getStatus() != SummaryStatus.DRAFT) {
+            throw new NotDraftWorkSummaryException();
+        }
+
+        var userId = AuthService.getCurrentUserId();
+        var year = summary.getYear();
+        var month = summary.getMonth();
+        var trialSummary = getTrialSummary(year, month, userId, summary);
+
+        summary.setHourlyRate(trialSummary.getHourlyRate());
+        summary.setTotalMinutes(trialSummary.getTotalMinutes());
+        summary.setSalaryAmount(trialSummary.getSalaryAmount());
+        summary.setStatus(SummaryStatus.CONFIRMED);
+        workSummaryRepository.save(summary);
+
+        return attendanceMapper.toWorkSummaryDto(summary);
+    }
 }
