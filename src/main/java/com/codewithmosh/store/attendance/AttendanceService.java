@@ -127,11 +127,21 @@ class AttendanceService {
             throw new ActiveSessionExistException();
         }
 
+        var userId = user.getId();
         var session = AttendanceSession.createClockInSession(user);
+        var workDate = session.getWorkDate();
+        var year = workDate.getYear();
+        var month = (short) workDate.getMonthValue();
+
+        var workSummary = workSummaryRepository.findWorkSummary(userId, year, month).orElse(null);
+        if (workSummary != null && workSummary.getStatus() != SummaryStatus.DRAFT) {
+            throw new WorkSummaryHasBeenConfirmedException();
+        }
+
         updateSession(labelId, description, session);
         attendanceSessionRepository.save(session);
 
-        return getActiveSessionResponse(session, user.getId());
+        return getActiveSessionResponse(session, userId);
     }
 
     @Transactional
@@ -169,7 +179,7 @@ class AttendanceService {
         }
 
         if (workSummary.getStatus() != SummaryStatus.DRAFT) {
-            throw new NotDraftWorkSummaryException();
+            throw new DraftWorkSummaryNotFoundException();
         }
 
         workSummary.setTotalMinutes(workSummary.getTotalMinutes() + session.getWorkMinutes());
@@ -215,10 +225,7 @@ class AttendanceService {
 
         var summary = workSummaryRepository.findWorkSummaryWithStatus(userId, year, month, SummaryStatus.DRAFT).orElse(null);
         if (summary == null) {
-            throw new WorkSummaryNotFoundException();
-        }
-        if (summary.getStatus() != SummaryStatus.DRAFT) {
-            throw new NotDraftWorkSummaryException();
+            throw new DraftWorkSummaryNotFoundException();
         }
 
         return getTrialSummary(year, month, userId, summary);
@@ -227,10 +234,7 @@ class AttendanceService {
     public WorkSummaryDto confirmWorkSummary(Long summaryId) {
         var summary = workSummaryRepository.findByIdAndStatus(summaryId, SummaryStatus.DRAFT).orElse(null);
         if (summary == null) {
-            throw new WorkSummaryNotFoundException();
-        }
-        if (summary.getStatus() != SummaryStatus.DRAFT) {
-            throw new NotDraftWorkSummaryException();
+            throw new DraftWorkSummaryNotFoundException();
         }
 
         var userId = AuthService.getCurrentUserId();
