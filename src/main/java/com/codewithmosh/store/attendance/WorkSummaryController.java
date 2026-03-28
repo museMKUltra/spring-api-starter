@@ -50,7 +50,7 @@ class WorkSummaryController {
         return ResponseEntity.ok(workSummaryDto);
     }
 
-    @ExceptionHandler(WorkSummaryNotFoundException.class)
+    @ExceptionHandler({WorkSummaryNotFoundException.class, DraftWorkSummaryNotFoundException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));
     }
