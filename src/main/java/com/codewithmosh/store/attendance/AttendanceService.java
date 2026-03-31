@@ -205,14 +205,14 @@ class AttendanceService {
         return attendanceMapper.toWorkSummaryDto(workSummary);
     }
 
-    private TrialSummaryDto getTrialSummary(Integer year, Short month, Long userId, Long summaryId) {
+    private TrialSummaryDto getTrialSummary(Integer year, Short month, Long userId) {
         var startDate = LocalDate.of(year, month, 1);
         var endDate = startDate.plusMonths(1);
 
         var sessions = attendanceSessionRepository.getSessionsForPeriod(userId, startDate, endDate);
         var employeeRate = employeeRateRepository.findEffectiveRate(userId).orElse(null);
 
-        return new TrialSummaryDto(summaryId, year, month, employeeRate, sessions);
+        return new TrialSummaryDto(year, month, employeeRate, sessions);
     }
 
     private TrialSummaryDto getTrialDateSummary(LocalDate workDate, Long userId) {
@@ -229,12 +229,7 @@ class AttendanceService {
     public TrialSummaryDto previewWorkSummary(Integer year, Short month) {
         var userId = AuthService.getCurrentUserId();
 
-        var summary = workSummaryRepository.findWorkSummaryWithStatus(userId, year, month, SummaryStatus.DRAFT).orElse(null);
-        if (summary == null) {
-            throw new DraftWorkSummaryNotFoundException();
-        }
-
-        return getTrialSummary(year, month, userId, summary.getId());
+        return getTrialSummary(year, month, userId);
     }
 
     public WorkSummaryDto confirmWorkSummary(Long summaryId) {
@@ -246,8 +241,9 @@ class AttendanceService {
         var userId = AuthService.getCurrentUserId();
         var year = summary.getYear();
         var month = summary.getMonth();
-        var trialSummary = getTrialSummary(year, month, userId, summary.getId());
+        var trialSummary = getTrialSummary(year, month, userId);
 
+        trialSummary.setId(summaryId);
         if (trialSummary.hasActiveSessions()) {
             throw new ActiveSessionExistException();
         }

@@ -1,6 +1,7 @@
 package com.codewithmosh.store.attendance;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,6 +12,7 @@ public class TrialSummaryDto {
     private List<AttendanceSession> sessions;
     private EmployeeRate employeeRate;
     @Getter
+    @Setter
     private Long id;
     @Getter
     private Integer year;
@@ -29,8 +31,7 @@ public class TrialSummaryDto {
         this.totalMinutes = totalMinutes;
     }
 
-    public TrialSummaryDto(Long id, Integer year, Short month, EmployeeRate employeeRate, List<AttendanceSession> sessions) {
-        this.id = id;
+    public TrialSummaryDto(Integer year, Short month, EmployeeRate employeeRate, List<AttendanceSession> sessions) {
         this.year = year;
         this.month = month;
         this.employeeRate = employeeRate;
