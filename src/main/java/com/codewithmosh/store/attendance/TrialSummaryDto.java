@@ -16,6 +16,8 @@ public class TrialSummaryDto {
     private Integer year;
     @Getter
     private Short month;
+    @Getter
+    private Short date;
     private BigDecimal hourlyRate;
     private Long totalMinutes;
 
@@ -31,6 +33,14 @@ public class TrialSummaryDto {
         this.id = id;
         this.year = year;
         this.month = month;
+        this.employeeRate = employeeRate;
+        this.sessions = sessions;
+    }
+
+    public TrialSummaryDto(Integer year, Short month, Short date, EmployeeRate employeeRate, List<AttendanceSession> sessions) {
+        this.year = year;
+        this.month = month;
+        this.date = date;
         this.employeeRate = employeeRate;
         this.sessions = sessions;
     }

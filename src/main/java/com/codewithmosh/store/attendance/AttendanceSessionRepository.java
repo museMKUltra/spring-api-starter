@@ -21,4 +21,6 @@ public interface AttendanceSessionRepository extends CrudRepository<AttendanceSe
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    List<AttendanceSession> findByUserIdAndWorkDate(Long userId, LocalDate workDate);
 }

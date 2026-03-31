@@ -60,12 +60,7 @@ class AttendanceService {
     private ActiveSessionResponse getActiveSessionResponse(AttendanceSession session, Long userId) {
         var hasSession = session != null;
         var workDate = hasSession ? session.getWorkDate() : LocalDate.now();
-        var year = workDate.getYear();
-        var month = (short) workDate.getMonthValue();
-
-        var trialSummary = userRepository
-                .findTrialSummary(userId, year, month, SummaryStatus.DRAFT)
-                .orElse(null);
+        var trialSummary = getTrialDateSummary(workDate, userId);
 
         var response = new ActiveSessionResponse();
         response.setActive(hasSession && session.getStatus() == SessionStatus.ACTIVE);
@@ -218,6 +213,17 @@ class AttendanceService {
         var employeeRate = employeeRateRepository.findEffectiveRate(userId).orElse(null);
 
         return new TrialSummaryDto(summaryId, year, month, employeeRate, sessions);
+    }
+
+    private TrialSummaryDto getTrialDateSummary(LocalDate workDate, Long userId) {
+        var year = workDate.getYear();
+        var month = (short) workDate.getMonthValue();
+        var date = (short) workDate.getDayOfMonth();
+
+        var sessions = attendanceSessionRepository.findByUserIdAndWorkDate(userId, workDate);
+        var employeeRate = employeeRateRepository.findEffectiveRate(userId).orElse(null);
+
+        return new TrialSummaryDto(year, month, date, employeeRate, sessions);
     }
 
     public TrialSummaryDto previewWorkSummary(Integer year, Short month) {
