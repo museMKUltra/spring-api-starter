@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
-@Controller
+@RestController
 @RequestMapping("/work-summary")
 class WorkSummaryController {
     private final WorkSummaryRepository workSummaryRepository;
