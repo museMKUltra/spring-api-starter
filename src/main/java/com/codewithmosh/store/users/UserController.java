@@ -36,7 +36,7 @@ public class UserController {
             UriComponentsBuilder uriBuilder
     ) {
         var userDto = userService.registerUser(request);
-        var uri = uriBuilder.path("/users/{id}").buildAndExpand(userDto.getId()).toUri();
+        var uri = uriBuilder.path("/api/users/{id}").buildAndExpand(userDto.getId()).toUri();
 
         return ResponseEntity.created(uri).body(userDto);
     }
