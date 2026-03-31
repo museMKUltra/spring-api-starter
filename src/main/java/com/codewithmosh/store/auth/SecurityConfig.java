@@ -56,7 +56,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(c -> {
                     featureSecurityRules.forEach(r -> r.configure(c));
-                    c.anyRequest().authenticated();
+                    c.requestMatchers("/api/**").authenticated();
+                    c.anyRequest().permitAll();
                 })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(c -> {
