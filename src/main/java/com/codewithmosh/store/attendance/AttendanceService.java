@@ -274,4 +274,26 @@ class AttendanceService {
 
         return attendanceMapper.toLabelDto(label);
     }
+
+    public LabelDto updateLabel(Long id, String name, String color) {
+        var label = attendanceLabelRepository.findById(id).orElse(null);
+        if (label == null) {
+            throw new LabelNotFoundException();
+        }
+
+        if (name != null && !name.equals(label.getName())) {
+            var hasExistName = attendanceLabelRepository.existsByNameAndIdNot(name, id);
+            if (hasExistName) {
+                throw new LabelNameAlreadyExistException();
+            }
+            label.setName(name);
+        }
+
+        if (color != null && !color.equals(label.getColor())) {
+            label.setColor(color);
+        }
+        attendanceLabelRepository.save(label);
+
+        return attendanceMapper.toLabelDto(label);
+    }
 }

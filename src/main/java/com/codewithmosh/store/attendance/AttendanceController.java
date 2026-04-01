@@ -61,6 +61,16 @@ class AttendanceController {
         return ResponseEntity.created(uri).body(labelDto);
     }
 
+    @PutMapping("/labels/{id}")
+    public ResponseEntity<LabelDto> updateLabel(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateLabelRequest request
+    ) {
+        var labelDto = attendanceService.updateLabel(id, request.getName(), request.getColor());
+
+        return ResponseEntity.ok(labelDto);
+    }
+
     @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, DraftWorkSummaryNotFoundException.class, WorkSummaryHasBeenConfirmedException.class, LabelNameAlreadyExistException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));

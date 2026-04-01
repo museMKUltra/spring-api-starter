@@ -8,4 +8,6 @@ public interface AttendanceLabelRepository extends CrudRepository<AttendanceLabe
     List<AttendanceLabel> findAll();
 
     boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, Long id);
 }
