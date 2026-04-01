@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Service
@@ -79,20 +80,25 @@ class AttendanceService {
     @Transactional
     public EmployeeRateDto createEmployeeRate(BigDecimal hourlyRate) {
         var user = authService.getCurrentUser();
-        var now = LocalDate.now();
+        var now = new AttendanceTime();
 
-        employeeRateRepository
-                .findEffectiveRate(user.getId())
-                .ifPresent(employeeRate -> employeeRate.setEffectiveTo(now));
+        getEffectiveRate(user.getId())
+                .ifPresent(employeeRate -> employeeRate.setEffectiveTo(now.getDateInZone()));
 
         var employeeRate = new EmployeeRate();
-        employeeRate.setEffectiveFrom(now);
+        employeeRate.setEffectiveFrom(now.getDateInZone());
         employeeRate.setHourlyRate(hourlyRate);
 
         user.addEmployeeRate(employeeRate);
         employeeRateRepository.save(employeeRate);
 
         return attendanceMapper.toEmployeeRateDto(employeeRate);
+    }
+
+    private Optional<EmployeeRate> getEffectiveRate(Long userId) {
+        var dateInZone = new AttendanceTime().getDateInZone();
+
+        return employeeRateRepository.findEffectiveRate(userId, dateInZone);
     }
 
     public EmployeeRateDto getEmployeeRate(Long rateId) {
@@ -106,7 +112,7 @@ class AttendanceService {
     }
 
     public EmployeeRateDto getCurrentEmployeeRate(User user) {
-        var employeeRate = employeeRateRepository.findEffectiveRate(user.getId()).orElse(null);
+        var employeeRate = getEffectiveRate(user.getId()).orElse(null);
 
         if (employeeRate == null) {
             throw new EmployeeRateNotFoundException();
@@ -210,7 +216,7 @@ class AttendanceService {
         var endDate = startDate.plusMonths(1);
 
         var sessions = attendanceSessionRepository.getSessionsForPeriod(userId, startDate, endDate);
-        var employeeRate = employeeRateRepository.findEffectiveRate(userId).orElse(null);
+        var employeeRate = getEffectiveRate(userId).orElse(null);
 
         return new TrialSummaryDto(year, month, employeeRate, sessions);
     }
@@ -221,7 +227,7 @@ class AttendanceService {
         var date = (short) workDate.getDayOfMonth();
 
         var sessions = attendanceSessionRepository.findByUserIdAndWorkDate(userId, workDate);
-        var employeeRate = employeeRateRepository.findEffectiveRate(userId).orElse(null);
+        var employeeRate = getEffectiveRate(userId).orElse(null);
 
         return new TrialSummaryDto(year, month, date, employeeRate, sessions);
     }
