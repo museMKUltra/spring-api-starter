@@ -299,9 +299,9 @@ class AttendanceService {
 
     @Transactional
     public void deleteLabel(Long id) {
-        var label = attendanceLabelRepository
-                .findById(id).orElseThrow(LabelNotFoundException::new);
-        label.deleteAllSessions();
+        if (!attendanceLabelRepository.existsById(id)) {
+            throw new LabelNotFoundException();
+        }
 
         attendanceLabelRepository.deleteById(id);
     }
