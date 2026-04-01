@@ -12,4 +12,6 @@ public interface AttendanceMapper {
     @Mapping(source = "hourlyRate", target = "hourlyRate", defaultValue = "0")
     @Mapping(source = "salaryAmount", target = "salaryAmount", defaultValue = "0")
     WorkSummaryDto toWorkSummaryDto(WorkSummary workSummary);
+
+    LabelDto toLabelDto(AttendanceLabel label);
 }

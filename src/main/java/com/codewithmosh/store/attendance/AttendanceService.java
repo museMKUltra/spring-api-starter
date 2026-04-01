@@ -254,4 +254,9 @@ class AttendanceService {
 
         return attendanceMapper.toWorkSummaryDto(summary);
     }
+
+    public List<LabelDto> getLabels() {
+        return attendanceLabelRepository.findAll()
+                .stream().map(attendanceMapper::toLabelDto).toList();
+    }
 }

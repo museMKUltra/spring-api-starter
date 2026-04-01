@@ -6,8 +6,9 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @AllArgsConstructor
 @RestController
@@ -41,6 +42,11 @@ class AttendanceController {
         var session = attendanceService.getActiveSession();
 
         return ResponseEntity.ok(session);
+    }
+
+    @GetMapping("/labels")
+    public List<LabelDto> getLabels() {
+        return attendanceService.getLabels();
     }
 
     @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, DraftWorkSummaryNotFoundException.class, WorkSummaryHasBeenConfirmedException.class})
