@@ -2,13 +2,12 @@ package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.users.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -34,5 +33,5 @@ public class EmployeeRate {
     private LocalDate effectiveTo;
 
     @Column(name = "created_at", insertable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }
