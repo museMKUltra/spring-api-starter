@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -49,7 +50,18 @@ class AttendanceController {
         return attendanceService.getLabels();
     }
 
-    @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, DraftWorkSummaryNotFoundException.class, WorkSummaryHasBeenConfirmedException.class})
+    @PostMapping("/labels")
+    public ResponseEntity<LabelDto> createLabel(
+            @Valid @RequestBody CreateLabelRequest request,
+            UriComponentsBuilder uriBuilder
+    ) {
+        var labelDto = attendanceService.createLabel(request.getName(), request.getColor());
+        var uri = uriBuilder.path("/api/attendance/labels/{id}").buildAndExpand(labelDto.getId()).toUri();
+
+        return ResponseEntity.created(uri).body(labelDto);
+    }
+
+    @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, DraftWorkSummaryNotFoundException.class, WorkSummaryHasBeenConfirmedException.class, LabelNameAlreadyExistException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));
     }

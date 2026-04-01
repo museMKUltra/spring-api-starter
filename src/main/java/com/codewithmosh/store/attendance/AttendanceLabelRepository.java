@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface AttendanceLabelRepository extends CrudRepository<AttendanceLabel, Long> {
     List<AttendanceLabel> findAll();
+
+    boolean existsByName(String name);
 }

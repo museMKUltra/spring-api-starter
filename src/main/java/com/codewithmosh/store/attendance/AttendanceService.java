@@ -259,4 +259,19 @@ class AttendanceService {
         return attendanceLabelRepository.findAll()
                 .stream().map(attendanceMapper::toLabelDto).toList();
     }
+
+    public LabelDto createLabel(String name, String color) {
+        var hasExistName = attendanceLabelRepository.existsByName(name);
+        if (hasExistName) {
+            throw new LabelNameAlreadyExistException();
+        }
+
+        var label = new AttendanceLabel();
+        label.setName(name);
+        label.setColor(color);
+        label.setType(LabelType.WORK);
+        attendanceLabelRepository.save(label);
+
+        return attendanceMapper.toLabelDto(label);
+    }
 }
