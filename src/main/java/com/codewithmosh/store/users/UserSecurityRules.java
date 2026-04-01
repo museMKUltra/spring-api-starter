@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 public class UserSecurityRules implements SecurityRules {
     @Override
     public void configure(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
-        registry.requestMatchers(HttpMethod.POST, "/users").permitAll();
+        registry.requestMatchers(HttpMethod.POST, "/api/users").permitAll();
     }
 }

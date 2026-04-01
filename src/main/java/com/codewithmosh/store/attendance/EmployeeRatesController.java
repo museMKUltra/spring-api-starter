@@ -22,7 +22,7 @@ public class EmployeeRatesController {
             UriComponentsBuilder uriBuilder
     ) {
         var employeeRateDto = attendanceService.createEmployeeRate(request.getHourlyRate());
-        var uri = uriBuilder.path("/employee-rates/{id}").buildAndExpand(employeeRateDto.getId()).toUri();
+        var uri = uriBuilder.path("/api/employee-rates/{id}").buildAndExpand(employeeRateDto.getId()).toUri();
 
         return ResponseEntity.created(uri).body(employeeRateDto);
     }
