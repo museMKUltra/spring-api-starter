@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Getter
@@ -30,10 +29,10 @@ public class AttendanceSession {
     private AttendanceLabel label;
 
     @Column(name = "clock_in")
-    private LocalDateTime clockIn;
+    private Instant clockIn;
 
     @Column(name = "clock_out")
-    private LocalDateTime clockOut;
+    private Instant clockOut;
 
     @Column(name = "work_minutes")
     private Long workMinutes;
@@ -51,10 +50,8 @@ public class AttendanceSession {
     @Column(name = "created_at", insertable = false, updatable = false)
     private Instant createdAt;
 
-    private static LocalDateTime getClockTime() {
-        var now = LocalDateTime.now();
-
-        return now.truncatedTo(ChronoUnit.SECONDS);
+    private static Instant getClockTime() {
+        return Instant.now().truncatedTo(ChronoUnit.SECONDS);
     }
 
     public static AttendanceSession createClockInSession(User user) {
@@ -62,7 +59,7 @@ public class AttendanceSession {
         var session = new AttendanceSession();
         session.setUser(user);
         session.setClockIn(clockTime);
-        session.setWorkDate(clockTime.toLocalDate());
+        session.setWorkDate(new AttendanceTime(clockTime).getDateInZone());
         session.setStatus(SessionStatus.ACTIVE);
 
         return session;

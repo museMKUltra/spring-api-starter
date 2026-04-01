@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,12 +67,6 @@ class AttendanceService {
         response.setSummary(trialSummary);
 
         return response;
-    }
-
-    private LocalDateTime getClockTime() {
-        var now = LocalDateTime.now();
-
-        return now.truncatedTo(ChronoUnit.SECONDS);
     }
 
     @Transactional
