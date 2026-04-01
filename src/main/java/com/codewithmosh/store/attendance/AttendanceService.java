@@ -296,4 +296,13 @@ class AttendanceService {
 
         return attendanceMapper.toLabelDto(label);
     }
+
+    @Transactional
+    public void deleteLabel(Long id) {
+        var label = attendanceLabelRepository
+                .findById(id).orElseThrow(LabelNotFoundException::new);
+        label.deleteAllSessions();
+
+        attendanceLabelRepository.deleteById(id);
+    }
 }

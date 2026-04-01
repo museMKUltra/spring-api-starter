@@ -23,4 +23,6 @@ public interface AttendanceSessionRepository extends CrudRepository<AttendanceSe
     );
 
     List<AttendanceSession> findByUserIdAndWorkDate(Long userId, LocalDate workDate);
+
+    List<AttendanceSession> findByLabel(AttendanceLabel label);
 }

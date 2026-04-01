@@ -29,4 +29,9 @@ public class AttendanceLabel {
 
     @OneToMany(mappedBy = "label")
     private Set<AttendanceSession> attendanceSessions = new HashSet<>();
+
+    public void deleteAllSessions() {
+        attendanceSessions.forEach(session -> session.setLabel(null));
+        attendanceSessions.clear();
+    }
 }

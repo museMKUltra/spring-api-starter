@@ -71,6 +71,11 @@ class AttendanceController {
         return ResponseEntity.ok(labelDto);
     }
 
+    @DeleteMapping("/labels/{id}")
+    public void deleteLabel(@PathVariable Long id) {
+        attendanceService.deleteLabel(id);
+    }
+
     @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, DraftWorkSummaryNotFoundException.class, WorkSummaryHasBeenConfirmedException.class, LabelNameAlreadyExistException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));

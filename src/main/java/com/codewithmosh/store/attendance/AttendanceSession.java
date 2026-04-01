@@ -76,7 +76,16 @@ public class AttendanceSession {
     }
 
     public void setLabel(AttendanceLabel label) {
+        // Remove from old label if exists
+        if (this.label != null) {
+            this.label.getAttendanceSessions().remove(this);
+        }
+
         this.label = label;
-        label.getAttendanceSessions().add(this);
+
+        // Add to new label if not null
+        if (label != null) {
+            label.getAttendanceSessions().add(this);
+        }
     }
 }
