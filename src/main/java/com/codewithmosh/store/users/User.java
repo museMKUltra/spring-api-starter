@@ -92,4 +92,9 @@ public class User {
         workSummaries.add(summary);
         summary.setUser(this);
     }
+
+    public void addAttendanceLabel(AttendanceLabel label) {
+        attendanceLabel.add(label);
+        label.setUser(this);
+    }
 }

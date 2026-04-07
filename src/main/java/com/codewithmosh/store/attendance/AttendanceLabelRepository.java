@@ -7,7 +7,7 @@ import java.util.List;
 public interface AttendanceLabelRepository extends CrudRepository<AttendanceLabel, Long> {
     List<AttendanceLabel> findByUserId(Long userId);
 
-    boolean existsByName(String name);
+    boolean existsByUserIdAndName(Long userId, String name);
 
     boolean existsByNameAndIdNot(String name, Long id);
 }

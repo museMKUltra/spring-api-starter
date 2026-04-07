@@ -263,7 +263,8 @@ class AttendanceService {
     }
 
     public LabelDto createLabel(String name, String color) {
-        var hasExistName = attendanceLabelRepository.existsByName(name);
+        var user = authService.getCurrentUser();
+        var hasExistName = attendanceLabelRepository.existsByUserIdAndName(user.getId(), name);
         if (hasExistName) {
             throw new LabelNameAlreadyExistException();
         }
@@ -272,6 +273,8 @@ class AttendanceService {
         label.setName(name);
         label.setColor(color);
         label.setType(LabelType.WORK);
+
+        user.addAttendanceLabel(label);
         attendanceLabelRepository.save(label);
 
         return attendanceMapper.toLabelDto(label);
