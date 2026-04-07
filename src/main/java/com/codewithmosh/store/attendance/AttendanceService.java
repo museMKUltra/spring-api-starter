@@ -283,13 +283,13 @@ class AttendanceService {
 
     public LabelDto updateLabel(Long id, String name, String color) {
         var userId = AuthService.getCurrentUserId();
-        var label = attendanceLabelRepository.findByUserIdAndId(userId, id).orElse(null);
+        var label = attendanceLabelRepository.getExistLabel(userId, id).orElse(null);
         if (label == null) {
             throw new LabelNotFoundException();
         }
 
         if (name != null && !name.equals(label.getName())) {
-            var hasExistName = attendanceLabelRepository.existsByNameAndIdNot(name, id);
+            var hasExistName = attendanceLabelRepository.existsByName(name, id);
             if (hasExistName) {
                 throw new LabelNameAlreadyExistException();
             }
