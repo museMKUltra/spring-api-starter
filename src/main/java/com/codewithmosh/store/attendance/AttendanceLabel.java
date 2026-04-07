@@ -1,5 +1,6 @@
 package com.codewithmosh.store.attendance;
 
+import com.codewithmosh.store.users.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,4 +30,8 @@ public class AttendanceLabel {
 
     @OneToMany(mappedBy = "label")
     private Set<AttendanceSession> attendanceSessions = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

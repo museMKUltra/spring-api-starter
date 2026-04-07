@@ -1,5 +1,6 @@
 package com.codewithmosh.store.users;
 
+import com.codewithmosh.store.attendance.AttendanceLabel;
 import com.codewithmosh.store.attendance.EmployeeRate;
 import com.codewithmosh.store.attendance.WorkSummary;
 import com.codewithmosh.store.products.Product;
@@ -56,6 +57,9 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private Set<WorkSummary> workSummaries = new HashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<AttendanceLabel> attendanceLabel = new HashSet<>();
 
     public void addAddress(Address address) {
         addresses.add(address);
