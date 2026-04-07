@@ -259,7 +259,7 @@ class AttendanceService {
     public List<LabelDto> getLabels() {
         var userId = AuthService.getCurrentUserId();
 
-        return attendanceLabelRepository.findByUserId(userId)
+        return attendanceLabelRepository.getExistLabels(userId)
                 .stream().map(attendanceMapper::toLabelDto).toList();
     }
 

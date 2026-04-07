@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AttendanceLabelRepository extends CrudRepository<AttendanceLabel, Long> {
-    List<AttendanceLabel> findByUserId(Long userId);
+    @Query("select a from AttendanceLabel a where a.user.id = :userId and a.deletedAt is null")
+    List<AttendanceLabel> getExistLabels(@Param("userId") Long userId);
 
     Optional<AttendanceLabel> findByUserIdAndId(Long userId, Long id);
 
