@@ -1,6 +1,6 @@
 package com.codewithmosh.store.auth;
 
-import com.codewithmosh.store.users.UserDto;
+import com.codewithmosh.store.users.MeDto;
 import com.codewithmosh.store.users.UserMapper;
 import com.codewithmosh.store.users.UserRepository;
 import jakarta.servlet.http.Cookie;
@@ -49,14 +49,13 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserDto> me() {
-        var user = authService.getCurrentUser();
-        if (user == null) {
+    public ResponseEntity<MeDto> me() {
+        var meDto = authService.getMe();
+        if (meDto == null) {
             return ResponseEntity.notFound().build();
         }
 
-        var userDto = userMapper.toDto(user);
-        return ResponseEntity.ok(userDto);
+        return ResponseEntity.ok(meDto);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

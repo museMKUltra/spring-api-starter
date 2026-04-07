@@ -1,5 +1,6 @@
 package com.codewithmosh.store.auth;
 
+import com.codewithmosh.store.users.MeDto;
 import com.codewithmosh.store.users.User;
 import com.codewithmosh.store.users.UserRepository;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,10 @@ public class AuthService {
 
     public User getCurrentUser() {
         return userRepository.findById(getCurrentUserId()).orElse(null);
+    }
+
+    public MeDto getMe() {
+        return userRepository.findMe(getCurrentUserId()).orElse(null);
     }
 
     public LoginResponse login(LoginRequest request) {

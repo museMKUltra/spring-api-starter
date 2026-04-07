@@ -11,6 +11,13 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
+    @Query("select new com.codewithmosh.store.users.MeDto(u.id, u.name, u.email, er.hourlyRate) from User u " +
+            "left join u.employeeRates er " +
+            "on er.effectiveFrom <= current_date and er.effectiveTo is null " +
+            "where u.id = :userId"
+    )
+    Optional<MeDto> findMe(@Param("userId") Long userId);
+
     @Query("select u from User u where u.email = ?1")
     Optional<User> findByEmail(String email);
 
