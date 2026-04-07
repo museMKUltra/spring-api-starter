@@ -281,7 +281,8 @@ class AttendanceService {
     }
 
     public LabelDto updateLabel(Long id, String name, String color) {
-        var label = attendanceLabelRepository.findById(id).orElse(null);
+        var userId = AuthService.getCurrentUserId();
+        var label = attendanceLabelRepository.findByUserIdAndId(userId, id).orElse(null);
         if (label == null) {
             throw new LabelNotFoundException();
         }
