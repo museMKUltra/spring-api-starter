@@ -1,6 +1,5 @@
 package com.codewithmosh.store.attendance;
 
-import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.common.ErrorDto;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -15,7 +14,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/attendance")
 class AttendanceController {
-    private final AuthService authService;
     private final AttendanceService attendanceService;
 
     @PostMapping("/clock-in")

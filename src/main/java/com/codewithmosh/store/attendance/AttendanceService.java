@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -305,10 +306,11 @@ class AttendanceService {
 
     @Transactional
     public void deleteLabel(Long id) {
-        if (!attendanceLabelRepository.existsById(id)) {
-            throw new LabelNotFoundException();
-        }
+        var userId = AuthService.getCurrentUserId();
+        var label = attendanceLabelRepository
+                .getExistLabel(userId, id)
+                .orElseThrow(LabelNotFoundException::new);
 
-        attendanceLabelRepository.deleteById(id);
+        label.setDeletedAt(Instant.now());
     }
 }
