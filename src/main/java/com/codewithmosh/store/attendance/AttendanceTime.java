@@ -34,11 +34,11 @@ public record AttendanceTime(Instant utcInstant) {
     }
 
     /**
-     * Returns a formatted string (e.g., "2026-04-01 08:30")
+     * Returns a formatted string (e.g., "2026-04-01T08:30:00")
      * based on the user's timezone.
      */
     public String getDateTimeInZone() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         return utcInstant.atZone(zone).format(formatter);
     }
 }
