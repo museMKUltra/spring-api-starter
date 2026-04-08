@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,6 +56,23 @@ class AttendanceService {
         var session = getAttendanceSession(SessionStatus.ACTIVE, userId);
 
         return getActiveSessionResponse(session, userId);
+    }
+
+    public List<SessionDto> getPeriodSessions(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("startDate must be before endDate");
+        }
+
+        var userId = AuthService.getCurrentUserId();
+
+        var sessions = attendanceSessionRepository
+                .getSessionsForPeriod(userId, startDate, endDate);
+
+        return sessions.stream()
+                .filter(session -> session.getStatus() == SessionStatus.COMPLETED)
+                .sorted(Comparator.comparing(AttendanceSession::getClockIn))
+                .map(attendanceMapper::toDto)
+                .toList();
     }
 
     private ActiveSessionResponse getActiveSessionResponse(AttendanceSession session, Long userId) {
