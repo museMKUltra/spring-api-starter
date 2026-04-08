@@ -9,5 +9,7 @@ public interface UserMapper {
 
     User toEntity(RegisterUserRequest request);
 
+    void updateCurrent(UpdateCurrentUserRequest request, @MappingTarget User user);
+
     void update(UpdateUserRequest request, @MappingTarget User user);
 }

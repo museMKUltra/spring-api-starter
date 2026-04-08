@@ -14,8 +14,6 @@ import java.util.Map;
 @AllArgsConstructor
 @RequestMapping("/users")
 public class UserController {
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
     private final UserService userService;
 
     @GetMapping
@@ -39,6 +37,15 @@ public class UserController {
         var uri = uriBuilder.path("/api/users/{id}").buildAndExpand(userDto.getId()).toUri();
 
         return ResponseEntity.created(uri).body(userDto);
+    }
+
+    @PutMapping("/update")
+    public UserDto updateCurrentUser(
+            @Valid @RequestBody UpdateCurrentUserRequest request
+    ) {
+        var userDto = userService.updateCurrentUser(request);
+
+        return userDto;
     }
 
     @PutMapping("/{id}")

@@ -1,5 +1,6 @@
 package com.codewithmosh.store.users;
 
+import com.codewithmosh.store.auth.AuthService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
@@ -40,6 +41,15 @@ public class UserService {
         var user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.USER);
+        userRepository.save(user);
+
+        return userMapper.toDto(user);
+    }
+
+    public UserDto updateCurrentUser(UpdateCurrentUserRequest request) {
+        var userId = AuthService.getCurrentUserId();
+        var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        userMapper.updateCurrent(request, user);
         userRepository.save(user);
 
         return userMapper.toDto(user);
