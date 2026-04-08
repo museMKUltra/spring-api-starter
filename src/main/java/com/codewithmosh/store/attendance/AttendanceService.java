@@ -59,12 +59,15 @@ class AttendanceService {
     }
 
     public List<SessionDto> getPeriodSessions(LocalDate startDate, LocalDate endDate) {
+        var dateInZone = new AttendanceTime().getDateInZone();
+        startDate = startDate == null ? dateInZone : startDate;
+        endDate = endDate == null ? dateInZone.plusDays(1) : endDate;
+
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("startDate must be before endDate");
         }
 
         var userId = AuthService.getCurrentUserId();
-
         var sessions = attendanceSessionRepository
                 .getSessionsForPeriod(userId, startDate, endDate);
 

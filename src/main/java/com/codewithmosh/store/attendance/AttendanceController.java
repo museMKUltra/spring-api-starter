@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -38,9 +39,10 @@ class AttendanceController {
 
     @GetMapping("/period-sessions")
     public ResponseEntity<List<SessionDto>> getPeriodSessions(
-            @Valid @RequestBody PeriodSessionsRequest request
+            @RequestParam(name = "startDate", required = false) LocalDate startDate,
+            @RequestParam(name = "endDate", required = false) LocalDate endDate
     ) {
-        var sessions = attendanceService.getPeriodSessions(request.getStartDate(), request.getEndDate());
+        var sessions = attendanceService.getPeriodSessions(startDate, endDate);
 
         return ResponseEntity.ok(sessions);
     }
