@@ -32,7 +32,7 @@ public class AttendanceLabel {
     @OneToMany(mappedBy = "label")
     private Set<AttendanceSession> attendanceSessions = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 

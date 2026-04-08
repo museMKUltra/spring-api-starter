@@ -13,6 +13,8 @@ public interface AttendanceSessionRepository extends CrudRepository<AttendanceSe
     List<AttendanceSession> findByUserIdAndStatus(Long userId, SessionStatus status);
 
     @Query("select a from AttendanceSession a " +
+            "join fetch a.user " +
+            "left join fetch a.label " +
             "where a.user.id = :userId " +
             "and a.workDate >= :startDate " +
             "and a.workDate < :endDate")
