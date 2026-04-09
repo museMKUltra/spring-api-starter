@@ -54,6 +54,16 @@ class AttendanceController {
         return ResponseEntity.ok(session);
     }
 
+    @PutMapping("/sessions/{sessionId}")
+    public ResponseEntity<SessionDto> updateSession(
+            @PathVariable(name = "sessionId") Long id,
+            @Valid @RequestBody UpdateSessionRequest request
+    ) {
+        var session = attendanceService.updateSession(id, request);
+
+        return ResponseEntity.ok(session);
+    }
+
     @GetMapping("/labels")
     public List<LabelDto> getLabels() {
         return attendanceService.getLabels();
@@ -85,7 +95,7 @@ class AttendanceController {
         attendanceService.deleteLabel(id);
     }
 
-    @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, DraftWorkSummaryNotFoundException.class, WorkSummaryHasBeenConfirmedException.class, LabelNameAlreadyExistException.class, IllegalArgumentException.class})
+    @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, DraftWorkSummaryNotFoundException.class, WorkSummaryHasBeenConfirmedException.class, LabelNameAlreadyExistException.class, SessionNotFoundException.class, IllegalArgumentException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));
     }
