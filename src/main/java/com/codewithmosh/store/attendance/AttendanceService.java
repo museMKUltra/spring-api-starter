@@ -212,9 +212,13 @@ class AttendanceService {
         }
 
         if (request.getLabelId() != null) {
-            var label = attendanceLabelRepository.findById(request.getLabelId()).orElse(null);
-            if (label == null) throw new LabelNotFoundException();
-            session.setLabel(label);
+            if (request.getLabelId() == 0) {
+                session.setLabel(null);
+            } else {
+                var label = attendanceLabelRepository.findById(request.getLabelId()).orElse(null);
+                if (label == null) throw new LabelNotFoundException();
+                session.setLabel(label);
+            }
         }
 
         if (request.getDescription() != null) {
