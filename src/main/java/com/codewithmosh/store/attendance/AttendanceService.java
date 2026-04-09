@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -201,18 +202,69 @@ class AttendanceService {
         workSummaryRepository.save(workSummary);
     }
 
+    @Transactional
+    public SessionDto updateSession(Long sessionId, UpdateSessionRequest request) {
+        var userId = AuthService.getCurrentUserId();
+        var session = attendanceSessionRepository.findById(sessionId).orElse(null);
+
+        if (session == null || !session.getUser().getId().equals(userId)) {
+            throw new SessionNotFoundException();
+        }
+
+        var labelId = request.getLabelId();
+        if (labelId != null) {
+            updateSessionLabel(labelId, session);
+        }
+
+        if (request.getDescription() != null) {
+            session.setDescription(request.getDescription());
+        }
+
+        if (request.getClockIn() != null) {
+            session.setClockIn(request.getClockIn());
+            session.setWorkDate(new AttendanceTime(request.getClockIn()).getDateInZone());
+        }
+
+        if (request.getClockOut() != null) {
+            session.setClockOut(request.getClockOut());
+        }
+
+        if (session.getClockOut() != null && !session.getClockOut().isAfter(session.getClockIn())) {
+            throw new IllegalArgumentException("clockOut must be after clockIn");
+        }
+
+        if (session.getStatus() == SessionStatus.COMPLETED
+                && session.getClockIn() != null
+                && session.getClockOut() != null) {
+            session.setWorkMinutes(Duration.between(session.getClockIn(), session.getClockOut()).toMinutes());
+        }
+
+        attendanceSessionRepository.save(session);
+
+        return attendanceMapper.toDto(session);
+    }
+
     private void updateSession(Long labelId, String description, AttendanceSession session) {
         if (labelId != null) {
-            var label = attendanceLabelRepository.findById(labelId).orElse(null);
-            if (label == null) {
-                throw new LabelNotFoundException();
-            }
-            session.setLabel(label);
+            updateSessionLabel(labelId, session);
         }
 
         if (description != null) {
             session.setDescription(description);
         }
+    }
+
+    private void updateSessionLabel(Long labelId, AttendanceSession session) {
+        if (labelId == 0) {
+            session.setLabel(null);
+            return;
+        }
+
+        var label = attendanceLabelRepository.findById(labelId).orElse(null);
+        if (label == null) {
+            throw new LabelNotFoundException();
+        }
+        session.setLabel(label);
     }
 
     public WorkSummaryDto getWorkSummary(Integer year, Short month) {
