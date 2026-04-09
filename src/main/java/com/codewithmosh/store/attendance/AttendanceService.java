@@ -211,14 +211,9 @@ class AttendanceService {
             throw new SessionNotFoundException();
         }
 
-        if (request.getLabelId() != null) {
-            if (request.getLabelId() == 0) {
-                session.setLabel(null);
-            } else {
-                var label = attendanceLabelRepository.findById(request.getLabelId()).orElse(null);
-                if (label == null) throw new LabelNotFoundException();
-                session.setLabel(label);
-            }
+        var labelId = request.getLabelId();
+        if (labelId != null) {
+            updateSessionLabel(labelId, session);
         }
 
         if (request.getDescription() != null) {
@@ -261,6 +256,19 @@ class AttendanceService {
         if (description != null) {
             session.setDescription(description);
         }
+    }
+
+    private void updateSessionLabel(Long labelId, AttendanceSession session) {
+        if (labelId == 0) {
+            session.setLabel(null);
+            return;
+        }
+
+        var label = attendanceLabelRepository.findById(labelId).orElse(null);
+        if (label == null) {
+            throw new LabelNotFoundException();
+        }
+        session.setLabel(label);
     }
 
     public WorkSummaryDto getWorkSummary(Integer year, Short month) {
