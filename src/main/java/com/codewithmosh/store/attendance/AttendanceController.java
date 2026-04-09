@@ -95,7 +95,7 @@ class AttendanceController {
         attendanceService.deleteLabel(id);
     }
 
-    @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, DraftWorkSummaryNotFoundException.class, WorkSummaryHasBeenConfirmedException.class, LabelNameAlreadyExistException.class, SessionNotFoundException.class, IllegalArgumentException.class})
+    @ExceptionHandler({LabelNotFoundException.class, ActiveSessionNotFoundException.class, ActiveSessionExistException.class, DraftWorkSummaryNotFoundException.class, WorkSummaryHasBeenConfirmedException.class, LabelNameAlreadyExistException.class, SessionNotFoundException.class, IllegalArgumentException.class, SessionNotFoundException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));
     }
