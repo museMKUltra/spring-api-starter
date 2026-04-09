@@ -246,11 +246,7 @@ class AttendanceService {
 
     private void updateSession(Long labelId, String description, AttendanceSession session) {
         if (labelId != null) {
-            var label = attendanceLabelRepository.findById(labelId).orElse(null);
-            if (label == null) {
-                throw new LabelNotFoundException();
-            }
-            session.setLabel(label);
+            updateSessionLabel(labelId, session);
         }
 
         if (description != null) {
