@@ -24,6 +24,7 @@ public interface AttendanceSessionRepository extends CrudRepository<AttendanceSe
             @Param("endDate") LocalDate endDate
     );
 
+    @EntityGraph(attributePaths = {"user", "label"})
     List<AttendanceSession> findByUserIdAndWorkDate(Long userId, LocalDate workDate);
 
     List<AttendanceSession> findByLabel(AttendanceLabel label);
