@@ -59,7 +59,11 @@ public class TrialSummaryDto {
         }
 
         return sessions.stream()
-                .filter(s -> s.getStatus() == SessionStatus.COMPLETED)
+                .filter(s -> {
+                    var isGlobalLabel = s.getLabel() != null && s.getLabel().getUser() == null;
+
+                    return s.getStatus() == SessionStatus.COMPLETED && !isGlobalLabel;
+                })
                 .mapToLong(AttendanceSession::getWorkMinutes).sum();
     }
 
