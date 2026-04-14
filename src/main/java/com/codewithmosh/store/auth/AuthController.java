@@ -13,8 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/auth")
 @AllArgsConstructor
@@ -34,14 +32,12 @@ public class AuthController {
         var loginResult = authService.login(request);
 
         var refreshToken = loginResult.getRefreshToken().toString();
-        for (String path : List.of("/api/auth/refresh", "/api/users/update")) {
-            var cookie = new Cookie("refreshToken", refreshToken);
-            cookie.setPath(path);
-            cookie.setMaxAge(jwtConfig.getRefreshTokenExpiration());
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            response.addCookie(cookie);
-        }
+        var cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setPath("/api/auth/refresh");
+        cookie.setMaxAge(jwtConfig.getRefreshTokenExpiration());
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        response.addCookie(cookie);
 
         return new JwtResponse(loginResult.getAccessToken().toString());
     }
