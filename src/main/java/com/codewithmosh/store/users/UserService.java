@@ -15,6 +15,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     public Iterable<UserDto> getAllUsers(String sortBy) {
         if (!Set.of("name", "email").contains(sortBy)) {
@@ -46,13 +47,15 @@ public class UserService {
         return userMapper.toDto(user);
     }
 
-    public UserDto updateCurrentUser(UpdateCurrentUserRequest request) {
-        var userId = AuthService.getCurrentUserId();
-        var user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+    public User updateCurrentUser(UpdateCurrentUserRequest request) {
+        var user = authService.getCurrentUser();
+        if (user == null) {
+            new UserNotFoundException();
+        }
         userMapper.updateCurrent(request, user);
         userRepository.save(user);
 
-        return userMapper.toDto(user);
+        return user;
     }
 
     public UserDto updateUser(Long id, UpdateUserRequest request) {

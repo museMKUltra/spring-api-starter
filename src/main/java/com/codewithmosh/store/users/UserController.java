@@ -1,6 +1,7 @@
 package com.codewithmosh.store.users;
 
 import com.codewithmosh.store.auth.AuthService;
+import com.codewithmosh.store.auth.JwtService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,8 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final AuthService authService;
+    private final JwtService jwtService;
+    private final UserMapper userMapper;
 
     @GetMapping
     public Iterable<UserDto> getAllUsers(
@@ -43,14 +46,12 @@ public class UserController {
 
     @PutMapping("/update")
     public UpdateUserResponse updateCurrentUser(
-            @Valid @RequestBody UpdateCurrentUserRequest request,
-            @CookieValue("refreshToken") String refreshToken
+            @Valid @RequestBody UpdateCurrentUserRequest request
     ) {
-        System.out.println(refreshToken);
-        var userDto = userService.updateCurrentUser(request);
-        var accessToken = authService.refreshAccessToken(refreshToken);
+        var user = userService.updateCurrentUser(request);
+        var accessToken = jwtService.generateAccessToken(user);
 
-        return new UpdateUserResponse(userDto, accessToken.toString());
+        return new UpdateUserResponse(userMapper.toDto(user), accessToken.toString());
     }
 
     @PutMapping("/{id}")
