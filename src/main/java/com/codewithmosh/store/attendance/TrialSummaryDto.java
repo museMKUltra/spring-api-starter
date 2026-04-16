@@ -6,6 +6,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class TrialSummaryDto {
     private final BigDecimal minutesPerHour = new BigDecimal("60");
@@ -58,13 +59,18 @@ public class TrialSummaryDto {
             return totalMinutes == null ? 0 : totalMinutes;
         }
 
-        return sessions.stream()
-                .filter(s -> {
-                    var isGlobalLabel = s.getLabel() != null && s.getLabel().getUser() == null;
-
-                    return s.getStatus() == SessionStatus.COMPLETED && !isGlobalLabel;
-                })
+        return getCountableSessions()
                 .mapToLong(AttendanceSession::getWorkMinutes).sum();
+    }
+
+    private Stream<AttendanceSession> getCountableSessions() {
+        return sessions.stream().filter(this::isCountableSession);
+    }
+
+    private boolean isCountableSession(AttendanceSession s) {
+        var isGlobalLabel = s.getLabel() != null && s.getLabel().getUser() == null;
+
+        return s.getStatus() == SessionStatus.COMPLETED && !isGlobalLabel;
     }
 
     public BigDecimal getTotalHours() {
