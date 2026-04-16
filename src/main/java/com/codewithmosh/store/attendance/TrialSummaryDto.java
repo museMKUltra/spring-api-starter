@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -73,6 +75,14 @@ public class TrialSummaryDto {
         return s.getStatus() == SessionStatus.COMPLETED && !isGlobalLabel;
     }
 
+    private Stream<AttendanceSession> getCompletedSessions() {
+        return sessions.stream().filter(this::isCompletedSession);
+    }
+
+    private boolean isCompletedSession(AttendanceSession s) {
+        return s.getStatus() == SessionStatus.COMPLETED;
+    }
+
     public BigDecimal getTotalHours() {
         return BigDecimal.valueOf(getTotalMinutes())
                 .divide(minutesPerHour, 10, RoundingMode.HALF_UP);
@@ -85,5 +95,28 @@ public class TrialSummaryDto {
 
     public boolean hasActiveSessions() {
         return sessions != null && sessions.stream().anyMatch(s -> s.getStatus() == SessionStatus.ACTIVE);
+    }
+
+    public List<TrialSummaryLabelDto> getLabels() {
+        if (sessions == null) {
+            return new ArrayList<>();
+        }
+
+        var labelMap = new HashMap<Long, TrialSummaryLabelDto>();
+        var completedSessions = getCompletedSessions();
+
+        completedSessions.forEach(session -> {
+            var label = session.getLabel();
+            if (label == null) {
+                return;
+            }
+
+            var labelDto = labelMap.computeIfAbsent(label.getId(), id -> new TrialSummaryLabelDto(label.getId(), label.getName(), label.getColor(), 0L));
+            var workMinutes = session.getWorkMinutes() == null ? 0L : session.getWorkMinutes();
+
+            labelDto.setTotalMinutes(labelDto.getTotalMinutes() + workMinutes);
+        });
+
+        return new ArrayList<>(labelMap.values());
     }
 }
