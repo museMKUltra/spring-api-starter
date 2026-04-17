@@ -111,8 +111,9 @@ public class TrialSummaryDto {
             var labelDto = labelMap.computeIfAbsent(labelId, id -> {
                 var labelName = label == null ? "" : label.getName();
                 var labelColor = label == null ? "" : label.getColor();
+                var isGlobal = (label != null) && (label.getUser() == null);
 
-                return new TrialSummaryLabelDto(labelId, labelName, labelColor, 0L);
+                return new TrialSummaryLabelDto(labelId, labelName, labelColor, 0L, isGlobal);
             });
             var workMinutes = session.getWorkMinutes() == null ? 0L : session.getWorkMinutes();
 
