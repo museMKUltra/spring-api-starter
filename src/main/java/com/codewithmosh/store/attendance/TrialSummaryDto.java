@@ -106,8 +106,14 @@ public class TrialSummaryDto {
         var completedSessions = getCompletedSessions();
 
         completedSessions.forEach(session -> {
-            var labelId = session.getLabel() == null ? 0L : session.getLabel().getId();
-            var labelDto = labelMap.computeIfAbsent(labelId, id -> new TrialSummaryLabelDto(labelId, 0L));
+            var label = session.getLabel();
+            var labelId = label == null ? 0L : label.getId();
+            var labelDto = labelMap.computeIfAbsent(labelId, id -> {
+                var labelName = label == null ? "" : label.getName();
+                var labelColor = label == null ? "" : label.getColor();
+
+                return new TrialSummaryLabelDto(labelId, labelName, labelColor, 0L);
+            });
             var workMinutes = session.getWorkMinutes() == null ? 0L : session.getWorkMinutes();
 
             labelDto.setWorkMinutes(labelDto.getWorkMinutes() + workMinutes);
