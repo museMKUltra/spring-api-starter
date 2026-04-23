@@ -389,6 +389,12 @@ class AttendanceService {
                 .orElseThrow(LabelNotFoundException::new);
 
         label.setDeletedAt(Instant.now());
+        label.setSortOrder(0);
+
+        var remainingLabels = attendanceLabelRepository.getExistLabels(userId, false);
+        for (int i = 0; i < remainingLabels.size(); i++) {
+            remainingLabels.get(i).setSortOrder(i);
+        }
     }
 
     @Transactional
