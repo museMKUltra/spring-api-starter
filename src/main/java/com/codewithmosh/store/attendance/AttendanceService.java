@@ -338,7 +338,7 @@ class AttendanceService {
 
     public LabelDto createLabel(String name, String color) {
         var user = authService.getCurrentUser();
-        var hasExistName = attendanceLabelRepository.existsByUserIdAndName(user.getId(), name);
+        var hasExistName = attendanceLabelRepository.existsByName(user.getId(), name);
         if (hasExistName) {
             throw new LabelNameAlreadyExistException();
         }
