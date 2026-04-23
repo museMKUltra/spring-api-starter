@@ -390,4 +390,34 @@ class AttendanceService {
 
         label.setDeletedAt(Instant.now());
     }
+
+    @Transactional
+    public void reorderLabels(List<Long> ids) {
+        var userId = AuthService.getCurrentUserId();
+        List<AttendanceLabel> labels = attendanceLabelRepository.findAllById(ids);
+
+        // Safety check: ensure all belong to user
+        for (AttendanceLabel l : labels) {
+            var user = l.getUser();
+
+            if (user == null) {
+                throw new IllegalArgumentException("Global labels cannot be reordered");
+            }
+
+            if (!user.getId().equals(userId)) {
+                throw new IllegalArgumentException("Invalid label ownership");
+            }
+        }
+
+        // Assign new order
+        for (int i = 0; i < ids.size(); i++) {
+            Long id = ids.get(i);
+            AttendanceLabel label = labels.stream()
+                    .filter(l -> l.getId().equals(id))
+                    .findFirst()
+                    .orElseThrow(LabelNotFoundException::new);
+
+            label.setSortOrder(i);
+        }
+    }
 }
