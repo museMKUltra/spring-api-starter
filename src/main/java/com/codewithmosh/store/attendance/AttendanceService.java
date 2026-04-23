@@ -343,10 +343,14 @@ class AttendanceService {
             throw new LabelNameAlreadyExistException();
         }
 
+        var maxSortOrder = attendanceLabelRepository.findMaxSortOrder(user.getId());
+        var nextSortOrder = maxSortOrder == null ? 0 : maxSortOrder + 1;
+
         var label = new AttendanceLabel();
         label.setName(name);
         label.setColor(color);
         label.setType(LabelType.WORK);
+        label.setSortOrder(nextSortOrder);
 
         user.addAttendanceLabel(label);
         attendanceLabelRepository.save(label);

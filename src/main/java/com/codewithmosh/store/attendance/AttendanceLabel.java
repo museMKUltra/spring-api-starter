@@ -38,4 +38,7 @@ public class AttendanceLabel {
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
+
+    @Column(name = "sort_order")
+    private Integer sortOrder;
 }
