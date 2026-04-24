@@ -187,7 +187,6 @@ class AttendanceService {
             newWorkSummary.setUser(user);
             newWorkSummary.setYear(year);
             newWorkSummary.setMonth(month);
-            newWorkSummary.setTotalMinutes(session.getWorkMinutes());
 
             user.addWorkSummary(newWorkSummary);
             workSummaryRepository.save(newWorkSummary);
@@ -198,7 +197,6 @@ class AttendanceService {
             throw new DraftWorkSummaryNotFoundException();
         }
 
-        workSummary.setTotalMinutes(workSummary.getTotalMinutes() + session.getWorkMinutes());
         workSummaryRepository.save(workSummary);
     }
 

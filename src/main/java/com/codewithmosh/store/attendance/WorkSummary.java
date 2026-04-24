@@ -29,7 +29,7 @@ public class WorkSummary {
     private Short month;
 
     @Column(name = "total_minutes")
-    private Long totalMinutes;
+    private Long totalMinutes = 0L;
 
     @Column(name = "hourly_rate")
     private BigDecimal hourlyRate;
