@@ -196,8 +196,6 @@ class AttendanceService {
         if (workSummary.getStatus() != SummaryStatus.DRAFT) {
             throw new DraftWorkSummaryNotFoundException();
         }
-
-        workSummaryRepository.save(workSummary);
     }
 
     @Transactional
