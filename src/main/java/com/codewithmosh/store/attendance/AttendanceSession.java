@@ -54,6 +54,18 @@ public class AttendanceSession {
         return Instant.now().truncatedTo(ChronoUnit.SECONDS);
     }
 
+    public static AttendanceSession createSession(User user, CreateSessionRequest request) {
+        var session = new AttendanceSession();
+        session.setUser(user);
+        session.setClockIn(request.getClockIn());
+        session.setWorkDate(new AttendanceTime(request.getClockIn()).getDateInZone());
+        session.setClockOut(request.getClockOut());
+        session.setWorkMinutes(Duration.between(session.getClockIn(), session.getClockOut()).toMinutes());
+        session.setStatus(SessionStatus.COMPLETED);
+
+        return session;
+    }
+
     public static AttendanceSession createClockInSession(User user) {
         var clockTime = getClockTime();
         var session = new AttendanceSession();

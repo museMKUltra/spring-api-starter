@@ -54,6 +54,21 @@ class AttendanceController {
         return ResponseEntity.ok(session);
     }
 
+    @PostMapping("/sessions")
+    public ResponseEntity<SessionDto> createSession(
+            @Valid @RequestBody CreateSessionRequest request,
+            UriComponentsBuilder uriBuilder
+    ) {
+        var session = attendanceService.createSession(request);
+
+        var uri = uriBuilder
+                .path("/api/attendance/sessions/{id}")
+                .buildAndExpand(session.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(session);
+    }
+
     @PutMapping("/sessions/{sessionId}")
     public ResponseEntity<SessionDto> updateSession(
             @PathVariable(name = "sessionId") Long id,

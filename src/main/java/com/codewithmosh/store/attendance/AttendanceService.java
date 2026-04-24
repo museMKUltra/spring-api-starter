@@ -431,4 +431,27 @@ class AttendanceService {
 
         attendanceSessionRepository.delete(session);
     }
+
+    @Transactional
+    public SessionDto createSession(CreateSessionRequest request) {
+        if (request.getClockOut().isBefore(request.getClockIn())) {
+            throw new IllegalArgumentException("Clock out must be after clock in");
+        }
+
+        var user = authService.getCurrentUser();
+        var session = AttendanceSession.createSession(user, request);
+
+        if (request.getLabelId() != null) {
+            updateSessionLabel(request.getLabelId(), session);
+        }
+
+        if (request.getDescription() != null) {
+            session.setDescription(request.getDescription());
+        }
+
+        findOrCreateWorkSummary(user, session);
+        attendanceSessionRepository.save(session);
+
+        return attendanceMapper.toDto(session);
+    }
 }
