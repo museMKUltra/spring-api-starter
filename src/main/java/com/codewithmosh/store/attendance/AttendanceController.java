@@ -64,6 +64,15 @@ class AttendanceController {
         return ResponseEntity.ok(session);
     }
 
+    @DeleteMapping("/sessions/{sessionId}")
+    public ResponseEntity<Void> deleteSession(
+            @PathVariable(name = "sessionId") Long id
+    ) {
+        attendanceService.deleteSession(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/labels")
     public List<LabelDto> getLabels() {
         return attendanceService.getLabels();

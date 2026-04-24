@@ -424,4 +424,13 @@ class AttendanceService {
             label.setSortOrder(i);
         }
     }
+
+    public void deleteSession(Long id) {
+        var userId = AuthService.getCurrentUserId();
+        var session = attendanceSessionRepository.findById(id)
+                .filter(s -> s.getUser().getId().equals(userId))
+                .orElseThrow(SessionNotFoundException::new);
+
+        attendanceSessionRepository.delete(session);
+    }
 }
