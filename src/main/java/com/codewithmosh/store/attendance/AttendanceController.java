@@ -91,8 +91,10 @@ class AttendanceController {
     }
 
     @DeleteMapping("/labels/{id}")
-    public void deleteLabel(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteLabel(@PathVariable Long id) {
         attendanceService.deleteLabel(id);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/labels/reorder")
