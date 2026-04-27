@@ -73,4 +73,8 @@ public class AuthService {
 
         return new RefreshResponse(newAccessToken, newRefreshToken);
     }
+
+    public void logout(String refreshToken) {
+        refreshTokenService.delete(refreshToken);
+    }
 }

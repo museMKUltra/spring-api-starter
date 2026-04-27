@@ -5,6 +5,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,12 +18,23 @@ public class AuthController {
     private final JwtConfig jwtConfig;
     private final AuthService authService;
 
-    private void setCookie(HttpServletResponse response, String refreshToken) {
+    private static @NonNull Cookie getCookie(String refreshToken, int expiration) {
         var cookie = new Cookie("refreshToken", refreshToken);
         cookie.setPath("/api/auth/refresh");
-        cookie.setMaxAge(jwtConfig.getRefreshTokenExpiration());
+        cookie.setMaxAge(expiration);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
+
+        return cookie;
+    }
+
+    private void setCookie(HttpServletResponse response, String refreshToken) {
+        var cookie = getCookie(refreshToken, jwtConfig.getRefreshTokenExpiration());
+        response.addCookie(cookie);
+    }
+
+    private void resetCookie(HttpServletResponse response, String refreshToken) {
+        var cookie = getCookie(refreshToken, 0);
         response.addCookie(cookie);
     }
 
@@ -52,6 +64,20 @@ public class AuthController {
         setCookie(response, newRefreshToken);
 
         return new JwtResponse(newAccessToken);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
+        if (refreshToken != null) {
+            authService.logout(refreshToken);
+        }
+
+        resetCookie(response, refreshToken);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/me")
