@@ -17,22 +17,27 @@ public class AuthController {
     private final JwtConfig jwtConfig;
     private final AuthService authService;
 
-    @PostMapping("/login")
-    public JwtResponse login(
-            @Valid @RequestBody LoginRequest request,
-            HttpServletResponse response
-    ) {
-        var loginResult = authService.login(request);
-
-        var refreshToken = loginResult.getRefreshToken().toString();
+    private void setCookie(HttpServletResponse response, String refreshToken) {
         var cookie = new Cookie("refreshToken", refreshToken);
         cookie.setPath("/api/auth/refresh");
         cookie.setMaxAge(jwtConfig.getRefreshTokenExpiration());
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         response.addCookie(cookie);
+    }
 
-        return new JwtResponse(loginResult.getAccessToken().toString());
+    @PostMapping("/login")
+    public JwtResponse login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response
+    ) {
+        var loginResult = authService.login(request);
+        var refreshToken = loginResult.getRefreshToken().toString();
+        var accessToken = loginResult.getAccessToken().toString();
+
+        setCookie(response, refreshToken);
+
+        return new JwtResponse(accessToken);
     }
 
     @PostMapping("/refresh")
