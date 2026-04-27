@@ -25,6 +25,15 @@ public class AuthService {
         return (Long) authentication.getPrincipal();
     }
 
+    private Jwt rotateRefreshToken(String refreshToken, User user) {
+        refreshTokenService.delete(refreshToken);
+
+        var newRefreshToken = jwtService.generateRefreshToken(user);
+        refreshTokenService.create(user, newRefreshToken.toString());
+
+        return newRefreshToken;
+    }
+
     public User getCurrentUser() {
         return userRepository.findById(getCurrentUserId()).orElse(null);
     }
@@ -50,13 +59,18 @@ public class AuthService {
         return new LoginResponse(accessToken, refreshToken);
     }
 
-    public Jwt refreshAccessToken(String refreshToken) {
+    public RefreshResponse refresh(String refreshToken) {
         var jwt = jwtService.parseToken(refreshToken);
         if (jwt == null || jwt.isExpired()) {
             throw new BadCredentialsException("Invalid refresh token");
         }
 
-        var user = userRepository.findById(jwt.getUserId()).orElseThrow();
-        return jwtService.generateAccessToken(user);
+        var storedToken = refreshTokenService.verify(refreshToken);
+        var user = storedToken.getUser();
+
+        var newRefreshToken = rotateRefreshToken(refreshToken, user);
+        var newAccessToken = jwtService.generateAccessToken(user);
+
+        return new RefreshResponse(newAccessToken, newRefreshToken);
     }
 }

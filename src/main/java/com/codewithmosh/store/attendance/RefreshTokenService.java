@@ -3,7 +3,9 @@ package com.codewithmosh.store.attendance;
 import com.codewithmosh.store.auth.JwtConfig;
 import com.codewithmosh.store.users.User;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
@@ -29,14 +31,14 @@ public class RefreshTokenService {
 
     public RefreshToken verify(String tokenValue) {
         RefreshToken token = repository.findByToken(tokenValue)
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
 
         if (token.isRevoked()) {
-            throw new RuntimeException("Refresh token revoked");
+            throw new BadCredentialsException("Refresh token revoked");
         }
 
         if (token.getExpiryDate().isBefore(Instant.now())) {
-            throw new RuntimeException("Refresh token expired");
+            throw new BadCredentialsException("Refresh token expired");
         }
 
         return token;
@@ -49,10 +51,12 @@ public class RefreshTokenService {
         });
     }
 
+    @Transactional
     public void delete(String tokenValue) {
         repository.deleteByToken(tokenValue);
     }
 
+    @Transactional
     public void deleteAllByUser(Long userId) {
         repository.deleteByUserId(userId);
     }
