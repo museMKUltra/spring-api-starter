@@ -1,5 +1,6 @@
 package com.codewithmosh.store.auth;
 
+import com.codewithmosh.store.attendance.RefreshTokenService;
 import com.codewithmosh.store.users.MeDto;
 import com.codewithmosh.store.users.User;
 import com.codewithmosh.store.users.UserRepository;
@@ -16,6 +17,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public static Long getCurrentUserId() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -42,6 +44,8 @@ public class AuthService {
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
         var accessToken = jwtService.generateAccessToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
+
+        refreshTokenService.create(user, refreshToken.toString());
 
         return new LoginResponse(accessToken, refreshToken);
     }
