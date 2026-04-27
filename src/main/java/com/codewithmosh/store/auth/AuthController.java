@@ -41,10 +41,17 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public JwtResponse refresh(@CookieValue("refreshToken") String refreshToken) {
+    public JwtResponse refresh(
+            @CookieValue("refreshToken") String refreshToken,
+            HttpServletResponse response
+    ) {
         var refreshResult = authService.refresh(refreshToken);
+        var newRefreshToken = refreshResult.getRefreshToken().toString();
+        var newAccessToken = refreshResult.getAccessToken().toString();
 
-        return new JwtResponse(refreshResult.getAccessToken().toString());
+        setCookie(response, newRefreshToken);
+
+        return new JwtResponse(newAccessToken);
     }
 
     @GetMapping("/me")
