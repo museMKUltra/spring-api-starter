@@ -90,6 +90,20 @@ public class AuthController {
         resetCookie(response);
     }
 
+    @PostMapping("/guest")
+    public JwtResponse guestLogin(
+            @Valid @RequestBody GuestRequest request,
+            HttpServletResponse response
+    ) {
+        var loginResult = authService.createGuestUser(request.getName());
+        var refreshToken = loginResult.getRefreshToken().toString();
+        var accessToken = loginResult.getAccessToken().toString();
+
+        setCookie(response, refreshToken);
+
+        return new JwtResponse(accessToken);
+    }
+
     @GetMapping("/me")
     public ResponseEntity<MeDto> me() {
         var meDto = authService.getMe();

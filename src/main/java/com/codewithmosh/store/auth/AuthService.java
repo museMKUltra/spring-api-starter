@@ -3,6 +3,7 @@ package com.codewithmosh.store.auth;
 import com.codewithmosh.store.attendance.RefreshTokenNotFoundException;
 import com.codewithmosh.store.attendance.RefreshTokenService;
 import com.codewithmosh.store.users.MeDto;
+import com.codewithmosh.store.users.Role;
 import com.codewithmosh.store.users.User;
 import com.codewithmosh.store.users.UserRepository;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -85,5 +90,24 @@ public class AuthService {
         }
 
         refreshTokenService.delete(refreshToken);
+    }
+
+    public LoginResponse createGuestUser(String name) {
+        var user = User.builder()
+                .name(name)
+                .email("guest_" + UUID.randomUUID() + "@demo.local")
+                .password("")
+                .role(Role.USER)
+                .isGuest(true)
+                .expiresAt(Instant.now().plus(Duration.ofHours(24)))
+                .build();
+        userRepository.save(user);
+
+        var accessToken = jwtService.generateAccessToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+
+        refreshTokenService.create(user, refreshToken.toString());
+
+        return new LoginResponse(accessToken, refreshToken);
     }
 }
