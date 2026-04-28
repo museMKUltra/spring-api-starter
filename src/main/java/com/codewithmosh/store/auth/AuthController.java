@@ -1,5 +1,6 @@
 package com.codewithmosh.store.auth;
 
+import com.codewithmosh.store.attendance.RefreshTokenNotFoundException;
 import com.codewithmosh.store.common.ErrorDto;
 import com.codewithmosh.store.users.MeDto;
 import jakarta.servlet.http.Cookie;
@@ -67,7 +68,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public JwtResponse refresh(
-            @CookieValue("refreshToken") String refreshToken,
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
             HttpServletResponse response
     ) {
         var refreshResult = authService.refresh(refreshToken);
@@ -81,7 +82,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public void logout(
-            @CookieValue("refreshToken") String refreshToken,
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
             HttpServletResponse response
     ) {
         authService.logout(refreshToken);
@@ -99,7 +100,7 @@ public class AuthController {
         return ResponseEntity.ok(meDto);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
+    @ExceptionHandler({BadCredentialsException.class, RefreshTokenNotFoundException.class})
     public ResponseEntity<ErrorDto> handleBadCredentialsException(Exception ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 new ErrorDto(ex.getMessage())

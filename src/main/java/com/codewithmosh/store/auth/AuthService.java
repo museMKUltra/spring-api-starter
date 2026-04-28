@@ -1,5 +1,6 @@
 package com.codewithmosh.store.auth;
 
+import com.codewithmosh.store.attendance.RefreshTokenNotFoundException;
 import com.codewithmosh.store.attendance.RefreshTokenService;
 import com.codewithmosh.store.users.MeDto;
 import com.codewithmosh.store.users.User;
@@ -60,6 +61,10 @@ public class AuthService {
     }
 
     public RefreshResponse refresh(String refreshToken) {
+        if (refreshToken == null) {
+            throw new RefreshTokenNotFoundException();
+        }
+
         var jwt = jwtService.parseToken(refreshToken);
         if (jwt == null || jwt.isExpired()) {
             throw new BadCredentialsException("Invalid refresh token, jwt expired");
@@ -75,6 +80,10 @@ public class AuthService {
     }
 
     public void logout(String refreshToken) {
+        if (refreshToken == null) {
+            throw new RefreshTokenNotFoundException();
+        }
+
         refreshTokenService.delete(refreshToken);
     }
 }
