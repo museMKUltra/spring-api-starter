@@ -3,6 +3,7 @@ package com.codewithmosh.store.users;
 import com.codewithmosh.store.attendance.SummaryStatus;
 import com.codewithmosh.store.attendance.TrialSummaryDto;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -34,4 +35,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("month") Short month,
             @Param("status") SummaryStatus status
     );
+
+    @Modifying
+    @Query("delete from User u where u.isGuest = true and u.expiresAt <= current_timestamp")
+    void deleteExpiredGuests();
 }
