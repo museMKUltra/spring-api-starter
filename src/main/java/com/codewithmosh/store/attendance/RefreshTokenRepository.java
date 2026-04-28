@@ -1,6 +1,8 @@
 package com.codewithmosh.store.attendance;
 
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
@@ -11,5 +13,7 @@ public interface RefreshTokenRepository extends CrudRepository<RefreshToken, Lon
 
     void deleteByToken(String token);
 
-    void deleteByUserId(Long userId);
+    @Modifying
+    @Query("DELETE FROM RefreshToken t WHERE t.expiryDate < CURRENT_TIMESTAMP")
+    void deleteExpiredTokens();
 }
