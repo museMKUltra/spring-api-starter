@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 public class MeDto extends UserDto {
     private BigDecimal hourlyRate;
 
-    public MeDto(Long id, String name, String email, BigDecimal hourlyRate) {
-        super(id, name, email);
+    public MeDto(Long id, String name, String email, boolean isGuest, BigDecimal hourlyRate) {
+        super(id, name, email, isGuest);
         this.hourlyRate = hourlyRate == null ? BigDecimal.ZERO : hourlyRate;
     }
 }
