@@ -80,17 +80,13 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+    public void logout(
+            @CookieValue("refreshToken") String refreshToken,
             HttpServletResponse response
     ) {
-        if (refreshToken != null) {
-            authService.logout(refreshToken);
-        }
+        authService.logout(refreshToken);
 
-        resetCookie(response, refreshToken);
-
-        return ResponseEntity.ok().build();
+        resetCookie(response);
     }
 
     @GetMapping("/me")
@@ -106,6 +102,13 @@ public class AuthController {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorDto> handleBadCredentialsException(Exception ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                new ErrorDto(ex.getMessage())
+        );
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ErrorDto> handleMissingRequestCookieException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 new ErrorDto(ex.getMessage())
         );
     }
