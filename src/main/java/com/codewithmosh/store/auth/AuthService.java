@@ -62,7 +62,7 @@ public class AuthService {
     public RefreshResponse refresh(String refreshToken) {
         var jwt = jwtService.parseToken(refreshToken);
         if (jwt == null || jwt.isExpired()) {
-            throw new BadCredentialsException("Invalid refresh token");
+            throw new BadCredentialsException("Invalid refresh token, jwt expired");
         }
 
         var storedToken = refreshTokenService.verify(refreshToken);

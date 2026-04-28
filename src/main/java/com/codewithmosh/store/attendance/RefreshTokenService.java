@@ -31,7 +31,7 @@ public class RefreshTokenService {
 
     public RefreshToken verify(String tokenValue) {
         RefreshToken token = repository.findByToken(tokenValue)
-                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
+                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token, token not found"));
 
         if (token.isRevoked()) {
             throw new BadCredentialsException("Refresh token revoked");
