@@ -18,7 +18,9 @@ public class JwtService {
     }
 
     public Jwt generateRefreshToken(User user) {
-        return generateToken(user, jwtConfig.getRefreshTokenExpiration());
+        var refreshTokenExpiration = jwtConfig.getRefreshTokenExpiration(user.isGuest());
+
+        return generateToken(user, refreshTokenExpiration);
     }
 
     private Jwt generateToken(User user, long tokenExpiration) {

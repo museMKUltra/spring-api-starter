@@ -14,8 +14,13 @@ public class JwtConfig {
     private String secret;
     private int accessTokenExpiration;
     private int refreshTokenExpiration;
+    private int guestRefreshTokenExpiration;
 
     public SecretKey getSecret() {
         return Keys.hmacShaKeyFor(secret.getBytes());
+    }
+
+    public int getRefreshTokenExpiration(boolean isGuest) {
+        return isGuest ? guestRefreshTokenExpiration : refreshTokenExpiration;
     }
 }

@@ -2,10 +2,7 @@ package com.codewithmosh.store.auth;
 
 import com.codewithmosh.store.attendance.RefreshTokenNotFoundException;
 import com.codewithmosh.store.attendance.RefreshTokenService;
-import com.codewithmosh.store.users.MeDto;
-import com.codewithmosh.store.users.Role;
-import com.codewithmosh.store.users.User;
-import com.codewithmosh.store.users.UserRepository;
+import com.codewithmosh.store.users.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -24,6 +21,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final UserMapper userMapper;
 
     public static Long getCurrentUserId() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -62,7 +60,7 @@ public class AuthService {
 
         refreshTokenService.create(user, refreshToken.toString());
 
-        return new LoginResponse(accessToken, refreshToken);
+        return new LoginResponse(accessToken, refreshToken, userMapper.toDto(user));
     }
 
     public RefreshResponse refresh(String refreshToken) {
@@ -81,7 +79,7 @@ public class AuthService {
         var newRefreshToken = rotateRefreshToken(refreshToken, user);
         var newAccessToken = jwtService.generateAccessToken(user);
 
-        return new RefreshResponse(newAccessToken, newRefreshToken);
+        return new RefreshResponse(newAccessToken, newRefreshToken, userMapper.toDto(user));
     }
 
     public void logout(String refreshToken) {
@@ -108,6 +106,6 @@ public class AuthService {
 
         refreshTokenService.create(user, refreshToken.toString());
 
-        return new LoginResponse(accessToken, refreshToken);
+        return new LoginResponse(accessToken, refreshToken, userMapper.toDto(user));
     }
 }

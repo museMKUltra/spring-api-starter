@@ -17,11 +17,12 @@ public class RefreshTokenService {
 
     public RefreshToken create(User user, String tokenValue) {
         var now = Instant.now();
+        var refreshTokenExpiration = jwtConfig.getRefreshTokenExpiration(user.isGuest());
 
         RefreshToken token = RefreshToken.builder()
                 .token(tokenValue)
                 .user(user)
-                .expiryDate(now.plusSeconds(jwtConfig.getRefreshTokenExpiration()))
+                .expiryDate(now.plusSeconds(refreshTokenExpiration))
                 .revoked(false)
                 .createdAt(now)
                 .build();

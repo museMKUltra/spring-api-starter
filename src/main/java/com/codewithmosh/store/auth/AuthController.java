@@ -3,6 +3,7 @@ package com.codewithmosh.store.auth;
 import com.codewithmosh.store.attendance.RefreshTokenNotFoundException;
 import com.codewithmosh.store.common.ErrorDto;
 import com.codewithmosh.store.users.MeDto;
+import com.codewithmosh.store.users.UserDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -40,10 +41,10 @@ public class AuthController {
         response.addCookie(oldCookie);
     }
 
-    private void setCookie(HttpServletResponse response, String refreshToken) {
+    private void setCookie(HttpServletResponse response, String refreshToken, UserDto user) {
         deleteOldCookie(response);
 
-        var cookie = getCookie(refreshToken, jwtConfig.getRefreshTokenExpiration());
+        var cookie = getCookie(refreshToken, jwtConfig.getRefreshTokenExpiration(user.isGuest()));
         response.addCookie(cookie);
     }
 
@@ -61,7 +62,7 @@ public class AuthController {
         var refreshToken = loginResult.getRefreshToken().toString();
         var accessToken = loginResult.getAccessToken().toString();
 
-        setCookie(response, refreshToken);
+        setCookie(response, refreshToken, loginResult.getUser());
 
         return new JwtResponse(accessToken);
     }
@@ -75,7 +76,7 @@ public class AuthController {
         var newRefreshToken = refreshResult.getRefreshToken().toString();
         var newAccessToken = refreshResult.getAccessToken().toString();
 
-        setCookie(response, newRefreshToken);
+        setCookie(response, newRefreshToken, refreshResult.getUser());
 
         return new JwtResponse(newAccessToken);
     }
@@ -99,7 +100,7 @@ public class AuthController {
         var refreshToken = loginResult.getRefreshToken().toString();
         var accessToken = loginResult.getAccessToken().toString();
 
-        setCookie(response, refreshToken);
+        setCookie(response, refreshToken, loginResult.getUser());
 
         return new JwtResponse(accessToken);
     }
