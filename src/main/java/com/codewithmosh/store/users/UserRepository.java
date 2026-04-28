@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -36,7 +38,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("status") SummaryStatus status
     );
 
-    @Modifying
-    @Query("delete from User u where u.isGuest = true and u.expiresAt <= current_timestamp")
-    void deleteExpiredGuests();
+    List<User> findAllByIsGuestTrueAndExpiresAtBefore(Instant now);
 }

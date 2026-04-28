@@ -1,6 +1,7 @@
 package com.codewithmosh.store.users;
 
 import com.codewithmosh.store.attendance.AttendanceLabel;
+import com.codewithmosh.store.attendance.AttendanceSession;
 import com.codewithmosh.store.attendance.EmployeeRate;
 import com.codewithmosh.store.attendance.WorkSummary;
 import com.codewithmosh.store.products.Product;
@@ -59,14 +60,17 @@ public class User {
     )
     private Set<Product> favoriteProducts = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<EmployeeRate> employeeRates = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<WorkSummary> workSummaries = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<AttendanceLabel> attendanceLabel = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<AttendanceSession> attendanceSessions = new HashSet<>();
 
     public void addAddress(Address address) {
         addresses.add(address);

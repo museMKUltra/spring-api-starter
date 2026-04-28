@@ -6,6 +6,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+
 @Service
 @AllArgsConstructor
 public class GuestCleanupService {
@@ -13,7 +15,10 @@ public class GuestCleanupService {
 
     @Transactional
     @Scheduled(cron = "0 0 * * * *")
-    public void cleanGuests() {
-        userRepository.deleteExpiredGuests();
+    public void cleanupGuests() {
+        var guests = userRepository
+                .findAllByIsGuestTrueAndExpiresAtBefore(Instant.now());
+
+        userRepository.deleteAll(guests);
     }
 }
