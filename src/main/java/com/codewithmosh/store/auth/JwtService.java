@@ -30,11 +30,18 @@ public class JwtService {
                 .add("name", user.getName())
                 .add("role", user.getRole())
                 .add("isGuest", user.isGuest())
+                .add("expiresAt", getExpiresAt(user))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
                 .build();
 
         return new Jwt(claims, jwtConfig.getSecret());
+    }
+
+    private Long getExpiresAt(User user) {
+        return user.getExpiresAt() != null
+                ? user.getExpiresAt().toEpochMilli()
+                : null;
     }
 
     private Claims getClaims(String token) {

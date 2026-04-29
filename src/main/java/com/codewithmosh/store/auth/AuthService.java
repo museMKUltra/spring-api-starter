@@ -75,6 +75,9 @@ public class AuthService {
 
         var storedToken = refreshTokenService.verify(refreshToken);
         var user = storedToken.getUser();
+        if (user.isGuestExpired()) {
+            throw new BadCredentialsException("Guest expired");
+        }
 
         var newRefreshToken = rotateRefreshToken(refreshToken, user);
         var newAccessToken = jwtService.generateAccessToken(user);

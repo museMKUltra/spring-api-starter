@@ -108,4 +108,8 @@ public class User {
         attendanceLabel.add(label);
         label.setUser(this);
     }
+
+    public boolean isGuestExpired() {
+        return guest && expiresAt.isBefore(Instant.now());
+    }
 }

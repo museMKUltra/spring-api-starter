@@ -28,6 +28,24 @@ public class Jwt {
         return Role.valueOf(claims.get("role", String.class));
     }
 
+    public boolean isGuest() {
+        return Boolean.TRUE.equals(claims.get("isGuest", Boolean.class));
+    }
+
+    public Long getExpiresAt() {
+        return claims.get("expiresAt", Long.class);
+    }
+
+    public boolean isGuestExpired() {
+        var expiresAt = getExpiresAt();
+
+        System.out.println(System.currentTimeMillis());
+
+        return isGuest()
+                && expiresAt != null
+                && expiresAt < System.currentTimeMillis();
+    }
+
     @Override
     public String toString() {
         return Jwts.builder().claims(claims).signWith(secretKey).compact();
