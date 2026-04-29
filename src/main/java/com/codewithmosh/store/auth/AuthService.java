@@ -96,7 +96,7 @@ public class AuthService {
                 .email("guest_" + UUID.randomUUID() + "@demo.local")
                 .password("")
                 .role(Role.USER)
-                .isGuest(true)
+                .guest(true)
                 .expiresAt(Instant.now().plus(Duration.ofHours(24)))
                 .build();
         userRepository.save(user);

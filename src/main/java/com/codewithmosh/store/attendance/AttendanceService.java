@@ -2,7 +2,6 @@ package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.users.User;
-import com.codewithmosh.store.users.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,6 @@ class AttendanceService {
     private final EmployeeRateRepository employeeRateRepository;
     private final AttendanceLabelRepository attendanceLabelRepository;
     private final WorkSummaryRepository workSummaryRepository;
-    private final UserRepository userRepository;
 
     private List<AttendanceSession> getAttendanceSessions(SessionStatus status, Long userId) {
         return attendanceSessionRepository.findByUserIdAndStatus(userId, status);

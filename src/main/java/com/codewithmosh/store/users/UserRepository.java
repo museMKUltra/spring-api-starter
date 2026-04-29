@@ -3,7 +3,6 @@ package com.codewithmosh.store.users;
 import com.codewithmosh.store.attendance.SummaryStatus;
 import com.codewithmosh.store.attendance.TrialSummaryDto;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,7 +13,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
-    @Query("select new com.codewithmosh.store.users.MeDto(u.id, u.name, u.email, u.isGuest, er.hourlyRate) from User u " +
+    @Query("select new com.codewithmosh.store.users.MeDto(u.id, u.name, u.email, u.guest, u.expiresAt, er.hourlyRate) from User u " +
             "left join u.employeeRates er " +
             "on er.effectiveFrom <= current_date and er.effectiveTo is null " +
             "where u.id = :userId"
@@ -38,5 +37,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("status") SummaryStatus status
     );
 
-    List<User> findAllByIsGuestTrueAndExpiresAtBefore(Instant now);
+    List<User> findAllByGuestTrueAndExpiresAtBefore(Instant now);
 }

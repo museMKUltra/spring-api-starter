@@ -17,7 +17,7 @@ public class GuestCleanupService {
     @Scheduled(cron = "0 0 * * * *")
     public void cleanupGuests() {
         var guests = userRepository
-                .findAllByIsGuestTrueAndExpiresAtBefore(Instant.now());
+                .findAllByGuestTrueAndExpiresAtBefore(Instant.now());
 
         userRepository.deleteAll(guests);
     }

@@ -43,7 +43,7 @@ public class User {
     private Role role;
 
     @Column(name = "is_guest")
-    private boolean isGuest;
+    private boolean guest;
 
     @Column(name = "expires_at")
     private Instant expiresAt;
