@@ -6,12 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
-    @Query("select new com.codewithmosh.store.users.MeDto(u.id, u.name, u.email, er.hourlyRate) from User u " +
+    @Query("select new com.codewithmosh.store.users.MeDto(u.id, u.name, u.email, u.guest, u.expiresAt, er.hourlyRate) from User u " +
             "left join u.employeeRates er " +
             "on er.effectiveFrom <= current_date and er.effectiveTo is null " +
             "where u.id = :userId"
@@ -34,4 +36,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("month") Short month,
             @Param("status") SummaryStatus status
     );
+
+    List<User> findAllByGuestTrueAndExpiresAtBefore(Instant now);
 }

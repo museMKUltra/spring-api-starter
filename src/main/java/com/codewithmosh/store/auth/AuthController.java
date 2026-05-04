@@ -1,28 +1,57 @@
 package com.codewithmosh.store.auth;
 
+import com.codewithmosh.store.attendance.RefreshTokenNotFoundException;
+import com.codewithmosh.store.common.ErrorDto;
 import com.codewithmosh.store.users.MeDto;
-import com.codewithmosh.store.users.UserMapper;
-import com.codewithmosh.store.users.UserRepository;
+import com.codewithmosh.store.users.UserDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 @AllArgsConstructor
 public class AuthController {
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
     private final JwtConfig jwtConfig;
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
     private final AuthService authService;
+
+    private Cookie getCookie(String refreshToken, int expiration) {
+        var cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setPath("/api/auth");
+        cookie.setMaxAge(expiration);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+
+        return cookie;
+    }
+
+    // TODO: Remove this method when cookie is no longer used
+    private void deleteOldCookie(HttpServletResponse response) {
+        var oldCookie = new Cookie("refreshToken", "");
+        oldCookie.setPath("/api/auth/refresh");
+        oldCookie.setHttpOnly(true);
+        oldCookie.setSecure(true);
+        oldCookie.setMaxAge(0);
+        response.addCookie(oldCookie);
+    }
+
+    private void setCookie(HttpServletResponse response, String refreshToken, UserDto user) {
+        deleteOldCookie(response);
+
+        var cookie = getCookie(refreshToken, jwtConfig.getRefreshTokenExpiration(user.isGuest()));
+        response.addCookie(cookie);
+    }
+
+    private void resetCookie(HttpServletResponse response) {
+        var cookie = getCookie("", 0);
+        response.addCookie(cookie);
+    }
 
     @PostMapping("/login")
     public JwtResponse login(
@@ -30,22 +59,50 @@ public class AuthController {
             HttpServletResponse response
     ) {
         var loginResult = authService.login(request);
-
         var refreshToken = loginResult.getRefreshToken().toString();
-        var cookie = new Cookie("refreshToken", refreshToken);
-        cookie.setPath("/api/auth/refresh");
-        cookie.setMaxAge(jwtConfig.getRefreshTokenExpiration());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        response.addCookie(cookie);
+        var accessToken = loginResult.getAccessToken().toString();
 
-        return new JwtResponse(loginResult.getAccessToken().toString());
+        setCookie(response, refreshToken, loginResult.getUser());
+
+        return new JwtResponse(accessToken);
     }
 
     @PostMapping("/refresh")
-    public JwtResponse refresh(@CookieValue("refreshToken") String refreshToken) {
-        var accessToken = authService.refreshAccessToken(refreshToken);
-        return new JwtResponse(accessToken.toString());
+    public JwtResponse refresh(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
+        var refreshResult = authService.refresh(refreshToken);
+        var newRefreshToken = refreshResult.getRefreshToken().toString();
+        var newAccessToken = refreshResult.getAccessToken().toString();
+
+        setCookie(response, newRefreshToken, refreshResult.getUser());
+
+        return new JwtResponse(newAccessToken);
+    }
+
+    @PostMapping("/logout")
+    public void logout(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
+        authService.logout(refreshToken);
+
+        resetCookie(response);
+    }
+
+    @PostMapping("/guest")
+    public JwtResponse guestLogin(
+            @Valid @RequestBody GuestRequest request,
+            HttpServletResponse response
+    ) {
+        var loginResult = authService.createGuestUser(request.getName());
+        var refreshToken = loginResult.getRefreshToken().toString();
+        var accessToken = loginResult.getAccessToken().toString();
+
+        setCookie(response, refreshToken, loginResult.getUser());
+
+        return new JwtResponse(accessToken);
     }
 
     @GetMapping("/me")
@@ -58,8 +115,17 @@ public class AuthController {
         return ResponseEntity.ok(meDto);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Void> handleBadCredentialsException() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    @ExceptionHandler({BadCredentialsException.class, RefreshTokenNotFoundException.class})
+    public ResponseEntity<ErrorDto> handleBadCredentialsException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                new ErrorDto(ex.getMessage())
+        );
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ErrorDto> handleMissingRequestCookieException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new ErrorDto(ex.getMessage())
+        );
     }
 }

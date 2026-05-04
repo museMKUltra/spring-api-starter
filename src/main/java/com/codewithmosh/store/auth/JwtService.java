@@ -18,7 +18,9 @@ public class JwtService {
     }
 
     public Jwt generateRefreshToken(User user) {
-        return generateToken(user, jwtConfig.getRefreshTokenExpiration());
+        var refreshTokenExpiration = jwtConfig.getRefreshTokenExpiration(user.isGuest());
+
+        return generateToken(user, refreshTokenExpiration);
     }
 
     private Jwt generateToken(User user, long tokenExpiration) {
@@ -27,11 +29,19 @@ public class JwtService {
                 .add("email", user.getEmail())
                 .add("name", user.getName())
                 .add("role", user.getRole())
+                .add("isGuest", user.isGuest())
+                .add("expiresAt", getExpiresAt(user))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
                 .build();
 
         return new Jwt(claims, jwtConfig.getSecret());
+    }
+
+    private Long getExpiresAt(User user) {
+        return user.getExpiresAt() != null
+                ? user.getExpiresAt().toEpochMilli()
+                : null;
     }
 
     private Claims getClaims(String token) {

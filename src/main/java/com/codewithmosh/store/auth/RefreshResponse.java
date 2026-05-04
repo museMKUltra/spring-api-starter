@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class LoginResponse {
+public class RefreshResponse {
     private Jwt accessToken;
     private Jwt refreshToken;
     private UserDto user;

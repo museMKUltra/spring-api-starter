@@ -1,12 +1,14 @@
 package com.codewithmosh.store.users;
 
 import com.codewithmosh.store.attendance.AttendanceLabel;
+import com.codewithmosh.store.attendance.AttendanceSession;
 import com.codewithmosh.store.attendance.EmployeeRate;
 import com.codewithmosh.store.attendance.WorkSummary;
 import com.codewithmosh.store.products.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +42,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(name = "is_guest")
+    private boolean guest;
+
+    @Column(name = "expires_at")
+    private Instant expiresAt;
+
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @Builder.Default
     private List<Address> addresses = new ArrayList<>();
@@ -52,14 +60,17 @@ public class User {
     )
     private Set<Product> favoriteProducts = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<EmployeeRate> employeeRates = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<WorkSummary> workSummaries = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<AttendanceLabel> attendanceLabel = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<AttendanceSession> attendanceSessions = new HashSet<>();
 
     public void addAddress(Address address) {
         addresses.add(address);
@@ -96,5 +107,9 @@ public class User {
     public void addAttendanceLabel(AttendanceLabel label) {
         attendanceLabel.add(label);
         label.setUser(this);
+    }
+
+    public boolean isGuestExpired() {
+        return guest && expiresAt.isBefore(Instant.now());
     }
 }

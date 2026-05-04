@@ -28,6 +28,7 @@ import java.util.List;
 public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final GuestExpiryFilter guestExpiryFilter;
     private final List<SecurityRules> featureSecurityRules;
 
     @Bean
@@ -60,6 +61,7 @@ public class SecurityConfig {
                     c.anyRequest().permitAll();
                 })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(guestExpiryFilter, JwtAuthenticationFilter.class)
                 .exceptionHandling(c -> {
                     c.authenticationEntryPoint(
                             new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
