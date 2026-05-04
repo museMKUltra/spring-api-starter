@@ -32,9 +32,6 @@ public class GuestExpiryFilter extends OncePerRequestFilter {
             return;
         }
 
-        System.out.println(jwt.isGuest());
-        System.out.println(jwt.getExpiresAt());
-
         if (jwt.isGuestExpired()) {
             System.out.println(jwt.getUserId() + " guest account expired");
             SecurityContextHolder.clearContext();

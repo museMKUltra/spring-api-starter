@@ -39,8 +39,6 @@ public class Jwt {
     public boolean isGuestExpired() {
         var expiresAt = getExpiresAt();
 
-        System.out.println(System.currentTimeMillis());
-
         return isGuest()
                 && expiresAt != null
                 && expiresAt < System.currentTimeMillis();
