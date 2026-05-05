@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface WorkSummaryRepository extends CrudRepository<WorkSummary, Long> {
@@ -16,4 +17,8 @@ public interface WorkSummaryRepository extends CrudRepository<WorkSummary, Long>
     Optional<WorkSummary> findWorkSummaryWithStatus(@Param("userId") Long userId, @Param("year") Integer year, @Param("month") Short month, @Param("status") SummaryStatus status);
 
     Optional<WorkSummary> findByIdAndStatus(Long summaryId, SummaryStatus status);
+
+    @EntityGraph(attributePaths = "user")
+    @Query("select w from WorkSummary w where w.user.id = :userId order by w.year DESC, w.month DESC")
+    List<WorkSummary> findWorkSummaryOptions(@Param("userId") Long userId);
 }

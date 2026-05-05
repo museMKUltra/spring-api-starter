@@ -6,8 +6,9 @@ import com.codewithmosh.store.users.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @AllArgsConstructor
 @RestController
@@ -29,6 +30,13 @@ class WorkSummaryController {
         var workSummaryDto = attendanceService.getWorkSummary(year, month);
 
         return ResponseEntity.ok(workSummaryDto);
+    }
+
+    @GetMapping("/options")
+    public ResponseEntity<List<WorkSummaryOption>> getWorkSummaryOptions() {
+        var options = attendanceService.getWorkSummaryOptions();
+
+        return ResponseEntity.ok(options);
     }
 
     @GetMapping("/preview")

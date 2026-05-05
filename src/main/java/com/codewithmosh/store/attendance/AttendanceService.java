@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -451,5 +452,15 @@ class AttendanceService {
         attendanceSessionRepository.save(session);
 
         return attendanceMapper.toDto(session);
+    }
+
+    public List<WorkSummaryOption> getWorkSummaryOptions() {
+        var userId = AuthService.getCurrentUserId();
+        var workSummaries = workSummaryRepository.findWorkSummaryOptions(userId);
+        var options = workSummaries.stream()
+                .map(attendanceMapper::toWorkSummaryOption)
+                .collect(Collectors.toList());
+
+        return options;
     }
 }
