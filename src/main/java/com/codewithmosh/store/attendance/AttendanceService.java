@@ -4,6 +4,8 @@ import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.users.User;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,6 +15,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -451,5 +454,22 @@ class AttendanceService {
         attendanceSessionRepository.save(session);
 
         return attendanceMapper.toDto(session);
+    }
+
+    public Page<WorkSummaryDto> getWorkSummaries(int page, int size) {
+        var userId = AuthService.getCurrentUserId();
+        var pageable = PageRequest.of(page, size);
+        return workSummaryRepository.findWorkSummariesPaged(userId, pageable)
+                .map(attendanceMapper::toWorkSummaryDto);
+    }
+
+    public List<WorkSummaryOption> getWorkSummaryOptions() {
+        var userId = AuthService.getCurrentUserId();
+        var workSummaries = workSummaryRepository.findWorkSummaryOptions(userId);
+        var options = workSummaries.stream()
+                .map(attendanceMapper::toWorkSummaryOption)
+                .collect(Collectors.toList());
+
+        return options;
     }
 }

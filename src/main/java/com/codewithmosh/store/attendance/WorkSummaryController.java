@@ -4,10 +4,12 @@ import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.common.ErrorDto;
 import com.codewithmosh.store.users.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @AllArgsConstructor
 @RestController
@@ -29,6 +31,22 @@ class WorkSummaryController {
         var workSummaryDto = attendanceService.getWorkSummary(year, month);
 
         return ResponseEntity.ok(workSummaryDto);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<Page<WorkSummaryDto>> getWorkSummaries(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        var result = attendanceService.getWorkSummaries(page, size);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/options")
+    public ResponseEntity<List<WorkSummaryOption>> getWorkSummaryOptions() {
+        var options = attendanceService.getWorkSummaryOptions();
+
+        return ResponseEntity.ok(options);
     }
 
     @GetMapping("/preview")
