@@ -38,8 +38,7 @@ public class EmployeeRatesController {
 
     @GetMapping("/current")
     public ResponseEntity<EmployeeRateDto> getCurrentEmployeeRate() {
-        var user = authService.getCurrentUser();
-        var employeeRate = attendanceService.getCurrentEmployeeRate(user);
+        var employeeRate = attendanceService.getCurrentEmployeeRate();
 
         return ResponseEntity.ok(employeeRate);
     }

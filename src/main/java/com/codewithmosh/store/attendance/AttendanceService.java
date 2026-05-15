@@ -127,8 +127,9 @@ class AttendanceService {
         return attendanceMapper.toEmployeeRateDto(employeeRate);
     }
 
-    public EmployeeRateDto getCurrentEmployeeRate(User user) {
-        var employeeRate = getEffectiveRate(user.getId()).orElse(null);
+    public EmployeeRateDto getCurrentEmployeeRate() {
+        var userId = AuthService.getCurrentUserId();
+        var employeeRate = getEffectiveRate(userId).orElse(null);
 
         if (employeeRate == null) {
             throw new EmployeeRateNotFoundException();
