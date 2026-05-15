@@ -57,7 +57,7 @@ public class UserController {
     @PutMapping("/{id}")
     public UserDto updateUser(
             @PathVariable(name = "id") Long id,
-            @RequestBody UpdateUserRequest request
+            @Valid @RequestBody UpdateUserRequest request
     ) {
         var userDto = userService.updateUser(id, request);
 
@@ -72,7 +72,7 @@ public class UserController {
     @PostMapping("/{id}/change-password")
     public void changePassword(
             @PathVariable Long id,
-            @RequestBody ChangePasswordRequest request
+            @Valid @RequestBody ChangePasswordRequest request
     ) {
         userService.changePassword(id, request);
     }
