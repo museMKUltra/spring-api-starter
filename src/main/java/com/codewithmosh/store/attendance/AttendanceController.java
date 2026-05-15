@@ -24,6 +24,8 @@ class AttendanceController {
         request = request == null ? new ClockInAndOutRequest() : request;
         var activeSessionResponse = attendanceService.clockIn(request.getLabelId(), request.getDescription());
 
+        // TODO: permission MANAGE_OWN_HOURLY_RATE
+
         return ResponseEntity.ok(activeSessionResponse);
     }
 
@@ -33,6 +35,8 @@ class AttendanceController {
     ) {
         request = request == null ? new ClockInAndOutRequest() : request;
         var activeSessionResponse = attendanceService.clockOut(request.getLabelId(), request.getDescription());
+
+        // TODO: permission MANAGE_OWN_HOURLY_RATE
 
         return ResponseEntity.ok(activeSessionResponse);
     }
@@ -50,6 +54,8 @@ class AttendanceController {
     @GetMapping("/active-session")
     public ResponseEntity<ActiveSessionResponse> getActiveSession() {
         var session = attendanceService.getActiveSession();
+
+        // TODO: permission MANAGE_OWN_HOURLY_RATE
 
         return ResponseEntity.ok(session);
     }

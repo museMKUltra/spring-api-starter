@@ -52,8 +52,10 @@ class WorkSummaryController {
     @GetMapping("/preview")
     public ResponseEntity<TrialSummaryDto> previewWorkSummary(
             @RequestParam Integer year,
-            @RequestParam Short month
+            @RequestParam Short month,
+            @RequestParam(required = false) Long userId
     ) {
+        // TODO: permission PREVIEW_ALL_WORK_SUMMARY
         var summaryDto = attendanceService.previewWorkSummary(year, month);
 
         return ResponseEntity.ok(summaryDto);
@@ -61,8 +63,11 @@ class WorkSummaryController {
 
     @PostMapping("/{summaryId}/confirm")
     public ResponseEntity<WorkSummaryDto> confirmWorkSummary(
-            @PathVariable Long summaryId
+            @PathVariable Long summaryId,
+            @RequestParam(required = false) Long userId
     ) {
+        // TODO: permission CONFIRM_OWN_WORK_SUMMARY
+        // TODO: permission CONFIRM_ALL_WORK_SUMMARY
         var workSummaryDto = attendanceService.confirmWorkSummary(summaryId);
 
         return ResponseEntity.ok(workSummaryDto);

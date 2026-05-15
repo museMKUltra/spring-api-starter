@@ -1,6 +1,5 @@
 package com.codewithmosh.store.attendance;
 
-import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.common.ErrorDto;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -14,13 +13,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping("/employee-rates")
 public class EmployeeRatesController {
     private final AttendanceService attendanceService;
-    private final AuthService authService;
 
     @PostMapping
     public ResponseEntity<EmployeeRateDto> createEmployeeRate(
             @Valid @RequestBody CreateRateRequest request,
             UriComponentsBuilder uriBuilder
     ) {
+        // TODO: permission MANAGE_OWN_HOURLY_RATE
         var employeeRateDto = attendanceService.createEmployeeRate(request.getHourlyRate());
         var uri = uriBuilder.path("/api/employee-rates/{id}").buildAndExpand(employeeRateDto.getId()).toUri();
 
@@ -31,6 +30,7 @@ public class EmployeeRatesController {
     public ResponseEntity<EmployeeRateDto> getEmployeeRate(
             @PathVariable Long rateId
     ) {
+        // TODO: permission MANAGE_ALL_HOURLY_RATE
         var employeeRate = attendanceService.getEmployeeRate(rateId);
 
         return ResponseEntity.ok(employeeRate);
@@ -38,6 +38,7 @@ public class EmployeeRatesController {
 
     @GetMapping("/current")
     public ResponseEntity<EmployeeRateDto> getCurrentEmployeeRate() {
+        // TODO: permission MANAGE_OWN_HOURLY_RATE
         var employeeRate = attendanceService.getCurrentEmployeeRate();
 
         return ResponseEntity.ok(employeeRate);
