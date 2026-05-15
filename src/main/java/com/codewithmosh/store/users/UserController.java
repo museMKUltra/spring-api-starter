@@ -1,6 +1,6 @@
 package com.codewithmosh.store.users;
 
-import com.codewithmosh.store.auth.AuthService;
+import com.codewithmosh.store.attendance.PermissionDeniedException;
 import com.codewithmosh.store.auth.JwtService;
 import com.codewithmosh.store.common.ErrorDto;
 import jakarta.validation.Valid;
@@ -18,7 +18,6 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-    private final AuthService authService;
     private final JwtService jwtService;
     private final UserMapper userMapper;
 
@@ -60,9 +59,7 @@ public class UserController {
             @PathVariable(name = "id") Long id,
             @Valid @RequestBody UpdateUserRequest request
     ) {
-        var userDto = userService.updateUser(id, request);
-
-        return userDto;
+        return userService.updateUser(id, request);
     }
 
     @DeleteMapping("/{id}")
