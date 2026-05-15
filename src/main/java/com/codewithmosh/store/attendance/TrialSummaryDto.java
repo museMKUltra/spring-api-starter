@@ -51,7 +51,7 @@ public class TrialSummaryDto {
 
     public BigDecimal getHourlyRate() {
         if (employeeRate == null) {
-            return hourlyRate == null ? BigDecimal.ZERO : hourlyRate;
+            return hourlyRate;
         }
         return employeeRate.getHourlyRate();
     }
@@ -89,7 +89,14 @@ public class TrialSummaryDto {
     }
 
     public BigDecimal getSalaryAmount() {
-        return getTotalHours().multiply(getHourlyRate())
+        var rate = getHourlyRate();
+
+        if (rate == null) {
+            return null;
+        }
+
+        return getTotalHours()
+                .multiply(rate)
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -121,5 +128,10 @@ public class TrialSummaryDto {
         });
 
         return new ArrayList<>(labelMap.values());
+    }
+
+    public void hideHourlyRate() {
+        this.hourlyRate = null;
+        this.employeeRate = null;
     }
 }

@@ -11,6 +11,6 @@ public class MeDto extends UserDto {
 
     public MeDto(Long id, String name, String email, boolean guest, Instant expiresAt, BigDecimal hourlyRate) {
         super(id, name, email, guest, expiresAt);
-        this.hourlyRate = hourlyRate == null ? BigDecimal.ZERO : hourlyRate;
+        this.hourlyRate = hourlyRate;
     }
 }
