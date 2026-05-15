@@ -112,4 +112,8 @@ public class User {
     public boolean isGuestExpired() {
         return guest && expiresAt.isBefore(Instant.now());
     }
+
+    public boolean hasPermission(Permission permission) {
+        return this.role.getPermissions().contains(permission);
+    }
 }
