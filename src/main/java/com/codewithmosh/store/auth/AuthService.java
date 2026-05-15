@@ -111,4 +111,20 @@ public class AuthService {
 
         return new LoginResponse(accessToken, refreshToken, userMapper.toDto(user));
     }
+
+    public boolean requireSelfOrPermission(Long id, Permission permission) {
+        if (getCurrentUserId().equals(id)) {
+            return true;
+        }
+
+        if (requirePermission(permission)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean requirePermission(Permission permission) {
+        return getCurrentUser().hasPermission(permission);
+    }
 }
