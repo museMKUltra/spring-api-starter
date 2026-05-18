@@ -369,6 +369,23 @@ class AttendanceService {
         return attendanceMapper.toWorkSummaryDto(summary);
     }
 
+    public WorkSummaryDto payWorkSummary(Long summaryId) {
+        var currentUser = authService.getCurrentUser();
+        if (!currentUser.hasPermission(Permission.PAY_ALL_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to pay work summary");
+        }
+
+        var summary = workSummaryRepository.findByIdAndStatus(summaryId, SummaryStatus.CONFIRMED).orElse(null);
+        if (summary == null) {
+            throw new DraftWorkSummaryNotFoundException();
+        }
+
+        summary.setStatus(SummaryStatus.PAID);
+        workSummaryRepository.save(summary);
+
+        return attendanceMapper.toWorkSummaryDto(summary);
+    }
+
     public List<LabelDto> getLabels() {
         var userId = AuthService.getCurrentUserId();
 

@@ -61,6 +61,15 @@ class WorkSummaryController {
         return ResponseEntity.ok(workSummaryDto);
     }
 
+    @PostMapping("/{summaryId}/pay")
+    public ResponseEntity<WorkSummaryDto> payWorkSummary(
+            @PathVariable Long summaryId
+    ) {
+        var workSummaryDto = attendanceService.payWorkSummary(summaryId);
+
+        return ResponseEntity.ok(workSummaryDto);
+    }
+
     @ExceptionHandler({WorkSummaryNotFoundException.class, DraftWorkSummaryNotFoundException.class, ActiveSessionExistException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));

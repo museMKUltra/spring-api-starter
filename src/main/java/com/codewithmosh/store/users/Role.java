@@ -18,6 +18,7 @@ public enum Role {
             Permission.PREVIEW_ALL_WORK_SUMMARY,
             Permission.CONFIRM_OWN_WORK_SUMMARY,
             Permission.CONFIRM_ALL_WORK_SUMMARY,
+            Permission.PAY_ALL_WORK_SUMMARY,
             Permission.MANAGE_USERS
     ));
 
