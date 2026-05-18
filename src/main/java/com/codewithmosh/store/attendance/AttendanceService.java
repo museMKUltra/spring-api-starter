@@ -331,6 +331,23 @@ class AttendanceService {
         return getTrialSummary(year, month, userId);
     }
 
+    private void updateWorkSummary(WorkSummary summary, Long userId, SummaryStatus summaryStatus) {
+        var year = summary.getYear();
+        var month = summary.getMonth();
+        var trialSummary = getTrialSummary(year, month, userId);
+
+        trialSummary.setId(summary.getId());
+        if (trialSummary.hasActiveSessions()) {
+            throw new ActiveSessionExistException();
+        }
+
+        summary.setHourlyRate(trialSummary.getHourlyRate());
+        summary.setTotalMinutes(trialSummary.getTotalMinutes());
+        summary.setSalaryAmount(trialSummary.getSalaryAmount());
+        summary.setStatus(summaryStatus);
+        workSummaryRepository.save(summary);
+    }
+
     public WorkSummaryDto confirmWorkSummary(Long summaryId) {
         var currentUser = authService.getCurrentUser();
         if (!currentUser.hasPermission(Permission.CONFIRM_OWN_WORK_SUMMARY)) {
@@ -347,20 +364,7 @@ class AttendanceService {
             throw new PermissionDeniedException("You don't have permission to confirm work summary of other user");
         }
 
-        var year = summary.getYear();
-        var month = summary.getMonth();
-        var trialSummary = getTrialSummary(year, month, currentUser.getId());
-
-        trialSummary.setId(summaryId);
-        if (trialSummary.hasActiveSessions()) {
-            throw new ActiveSessionExistException();
-        }
-
-        summary.setHourlyRate(trialSummary.getHourlyRate());
-        summary.setTotalMinutes(trialSummary.getTotalMinutes());
-        summary.setSalaryAmount(trialSummary.getSalaryAmount());
-        summary.setStatus(SummaryStatus.CONFIRMED);
-        workSummaryRepository.save(summary);
+        updateWorkSummary(summary, currentUser.getId(), SummaryStatus.CONFIRMED);
 
         return attendanceMapper.toWorkSummaryDto(summary);
     }
