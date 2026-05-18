@@ -43,7 +43,12 @@ public class AuthService {
     }
 
     public MeDto getMe() {
-        return userRepository.findMe(getCurrentUserId()).orElse(null);
+        var meDto = userRepository.findMe(getCurrentUserId()).orElse(null);
+        if (!meDto.getPermissions().contains(Permission.MANAGE_OWN_HOURLY_RATE)) {
+            meDto.hideHourlyRate();
+        }
+
+        return meDto;
     }
 
     public LoginResponse login(LoginRequest request) {

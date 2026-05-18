@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
-    @Query("select new com.codewithmosh.store.users.MeDto(u.id, u.name, u.email, u.guest, u.expiresAt, er.hourlyRate) from User u " +
+    @Query("select new com.codewithmosh.store.users.MeDto(u.id, u.name, u.email, u.guest, u.expiresAt, u.role, er.hourlyRate) from User u " +
             "left join u.employeeRates er " +
             "on er.effectiveFrom <= current_date and er.effectiveTo is null " +
             "where u.id = :userId"
