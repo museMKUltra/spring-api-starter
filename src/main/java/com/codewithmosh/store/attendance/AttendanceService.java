@@ -313,22 +313,39 @@ class AttendanceService {
         return new TrialSummaryDto(year, month, date, employeeRate, sessions);
     }
 
-    public TrialSummaryDto previewWorkSummary(Integer year, Short month) {
-        var userId = AuthService.getCurrentUserId();
+    public TrialSummaryDto previewWorkSummary(Integer year, Short month, Long userId) {
+        if (userId == null) {
+            return getTrialSummary(year, month, AuthService.getCurrentUserId());
+        }
+
+        var currentUser = authService.getCurrentUser();
+        var isTheSameUser = currentUser.getId().equals(userId);
+        if (!isTheSameUser && !currentUser.hasPermission(Permission.PREVIEW_ALL_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to preview work summary of other user");
+        }
 
         return getTrialSummary(year, month, userId);
     }
 
     public WorkSummaryDto confirmWorkSummary(Long summaryId) {
+        var currentUser = authService.getCurrentUser();
+        if (!currentUser.hasPermission(Permission.CONFIRM_OWN_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to confirm own work summary");
+        }
+
         var summary = workSummaryRepository.findByIdAndStatus(summaryId, SummaryStatus.DRAFT).orElse(null);
         if (summary == null) {
             throw new DraftWorkSummaryNotFoundException();
         }
 
-        var userId = AuthService.getCurrentUserId();
+        var isTheSameUser = summary.getUser().getId().equals(currentUser.getId());
+        if (!isTheSameUser && !currentUser.hasPermission(Permission.CONFIRM_ALL_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to confirm work summary of other user");
+        }
+
         var year = summary.getYear();
         var month = summary.getMonth();
-        var trialSummary = getTrialSummary(year, month, userId);
+        var trialSummary = getTrialSummary(year, month, currentUser.getId());
 
         trialSummary.setId(summaryId);
         if (trialSummary.hasActiveSessions()) {
