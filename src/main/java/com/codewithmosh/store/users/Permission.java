@@ -3,6 +3,7 @@ package com.codewithmosh.store.users;
 public enum Permission {
     MANAGE_OWN_HOURLY_RATE,
     MANAGE_ALL_HOURLY_RATE,
+    PREVIEW_OWN_WORK_SUMMARY,
     PREVIEW_ALL_WORK_SUMMARY,
     CONFIRM_OWN_WORK_SUMMARY,
     CONFIRM_ALL_WORK_SUMMARY,

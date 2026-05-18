@@ -314,11 +314,15 @@ class AttendanceService {
     }
 
     public TrialSummaryDto previewWorkSummary(Integer year, Short month, Long userId) {
+        var currentUser = authService.getCurrentUser();
+        if (!currentUser.hasPermission(Permission.PREVIEW_OWN_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to preview work summary");
+        }
+
         if (userId == null) {
             return getTrialSummary(year, month, AuthService.getCurrentUserId());
         }
 
-        var currentUser = authService.getCurrentUser();
         var isTheSameUser = currentUser.getId().equals(userId);
         if (!isTheSameUser && !currentUser.hasPermission(Permission.PREVIEW_ALL_WORK_SUMMARY)) {
             throw new PermissionDeniedException("You don't have permission to preview work summary of other user");
