@@ -1,6 +1,7 @@
 package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
+import com.codewithmosh.store.users.Permission;
 import com.codewithmosh.store.users.User;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -54,10 +55,10 @@ class AttendanceService {
     }
 
     public ActiveSessionResponse getActiveSession() {
-        var userId = authService.getCurrentUserId();
-        var session = getAttendanceSession(SessionStatus.ACTIVE, userId);
+        var user = authService.getCurrentUser();
+        var session = getAttendanceSession(SessionStatus.ACTIVE, user.getId());
 
-        return getActiveSessionResponse(session, userId);
+        return getActiveSessionResponse(session, user);
     }
 
     public List<SessionDto> getPeriodSessions(LocalDate startDate, LocalDate endDate) {
@@ -80,15 +81,19 @@ class AttendanceService {
                 .toList();
     }
 
-    private ActiveSessionResponse getActiveSessionResponse(AttendanceSession session, Long userId) {
+    private ActiveSessionResponse getActiveSessionResponse(AttendanceSession session, User user) {
         var hasSession = session != null;
         var workDate = hasSession ? session.getWorkDate() : LocalDate.now();
-        var trialSummary = getTrialDateSummary(workDate, userId);
+        var trialSummary = getTrialDateSummary(workDate, user.getId());
 
         var response = new ActiveSessionResponse();
         response.setActive(hasSession && session.getStatus() == SessionStatus.ACTIVE);
         response.setSession(attendanceMapper.toDto(session));
         response.setSummary(trialSummary);
+
+        if (!user.hasPermission(Permission.MANAGE_OWN_HOURLY_RATE)) {
+            response.getSummary().hideHourlyRate();
+        }
 
         return response;
     }
@@ -145,13 +150,12 @@ class AttendanceService {
             throw new ActiveSessionExistException();
         }
 
-        var userId = user.getId();
         var session = AttendanceSession.createClockInSession(user);
         var workDate = session.getWorkDate();
         var year = workDate.getYear();
         var month = (short) workDate.getMonthValue();
 
-        var workSummary = workSummaryRepository.findWorkSummary(userId, year, month).orElse(null);
+        var workSummary = workSummaryRepository.findWorkSummary(user.getId(), year, month).orElse(null);
         if (workSummary != null && workSummary.getStatus() != SummaryStatus.DRAFT) {
             throw new WorkSummaryHasBeenConfirmedException();
         }
@@ -159,7 +163,7 @@ class AttendanceService {
         updateSession(labelId, description, session);
         attendanceSessionRepository.save(session);
 
-        return getActiveSessionResponse(session, userId);
+        return getActiveSessionResponse(session, user);
     }
 
     @Transactional
@@ -174,7 +178,7 @@ class AttendanceService {
         updateSession(labelId, description, session);
         findOrCreateWorkSummary(user, session);
 
-        return getActiveSessionResponse(session, user.getId());
+        return getActiveSessionResponse(session, user);
     }
 
     private void findOrCreateWorkSummary(User user, AttendanceSession session) {
