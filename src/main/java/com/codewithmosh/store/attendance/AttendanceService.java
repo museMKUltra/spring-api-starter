@@ -101,6 +101,10 @@ class AttendanceService {
     @Transactional
     public EmployeeRateDto createEmployeeRate(BigDecimal hourlyRate) {
         var user = authService.getCurrentUser();
+        if (!user.hasPermission(Permission.MANAGE_OWN_HOURLY_RATE)) {
+            throw new PermissionDeniedException("You don't have permission to create own hourly rate");
+        }
+
         var now = new AttendanceTime();
 
         getEffectiveRate(user.getId())
@@ -123,6 +127,11 @@ class AttendanceService {
     }
 
     public EmployeeRateDto getEmployeeRate(Long rateId) {
+        var user = authService.getCurrentUser();
+        if (!user.hasPermission(Permission.MANAGE_ALL_HOURLY_RATE)) {
+            throw new PermissionDeniedException("You don't have permission to manage hourly rate");
+        }
+
         var employeeRate = employeeRateRepository.findById(rateId).orElse(null);
 
         if (employeeRate == null) {
@@ -133,8 +142,12 @@ class AttendanceService {
     }
 
     public EmployeeRateDto getCurrentEmployeeRate() {
-        var userId = AuthService.getCurrentUserId();
-        var employeeRate = getEffectiveRate(userId).orElse(null);
+        var user = authService.getCurrentUser();
+        if (!user.hasPermission(Permission.MANAGE_OWN_HOURLY_RATE)) {
+            throw new PermissionDeniedException("You don't have permission to get own hourly rate");
+        }
+
+        var employeeRate = getEffectiveRate(user.getId()).orElse(null);
 
         if (employeeRate == null) {
             throw new EmployeeRateNotFoundException();

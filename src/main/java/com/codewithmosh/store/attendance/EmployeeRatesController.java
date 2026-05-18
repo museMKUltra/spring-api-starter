@@ -19,7 +19,6 @@ public class EmployeeRatesController {
             @Valid @RequestBody CreateRateRequest request,
             UriComponentsBuilder uriBuilder
     ) {
-        // TODO: permission MANAGE_OWN_HOURLY_RATE
         var employeeRateDto = attendanceService.createEmployeeRate(request.getHourlyRate());
         var uri = uriBuilder.path("/api/employee-rates/{id}").buildAndExpand(employeeRateDto.getId()).toUri();
 
@@ -30,7 +29,6 @@ public class EmployeeRatesController {
     public ResponseEntity<EmployeeRateDto> getEmployeeRate(
             @PathVariable Long rateId
     ) {
-        // TODO: permission MANAGE_ALL_HOURLY_RATE
         var employeeRate = attendanceService.getEmployeeRate(rateId);
 
         return ResponseEntity.ok(employeeRate);
@@ -38,7 +36,6 @@ public class EmployeeRatesController {
 
     @GetMapping("/current")
     public ResponseEntity<EmployeeRateDto> getCurrentEmployeeRate() {
-        // TODO: permission MANAGE_OWN_HOURLY_RATE
         var employeeRate = attendanceService.getCurrentEmployeeRate();
 
         return ResponseEntity.ok(employeeRate);
@@ -47,5 +44,10 @@ public class EmployeeRatesController {
     @ExceptionHandler(EmployeeRateNotFoundException.class)
     public ResponseEntity<ErrorDto> handleEmployeeRateNotFound(Exception exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(exception.getMessage()));
+    }
+
+    @ExceptionHandler(PermissionDeniedException.class)
+    public ResponseEntity<ErrorDto> handlePermissionDenied(Exception ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorDto(ex.getMessage()));
     }
 }

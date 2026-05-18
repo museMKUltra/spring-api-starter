@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 public class AttendanceSecurityRules implements SecurityRules {
     @Override
     public void configure(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
-        registry.requestMatchers("/api/employee-rates/**").hasRole(Role.ADMIN.name());
+        registry.requestMatchers("/api/employee-rates/**").hasAnyRole(Role.ADMIN.name(), Role.PREMIUM.name());
     }
 }
