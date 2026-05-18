@@ -331,10 +331,10 @@ class AttendanceService {
         return getTrialSummary(year, month, userId);
     }
 
-    private void updateWorkSummary(WorkSummary summary, Long userId, SummaryStatus summaryStatus) {
+    private void updateWorkSummary(WorkSummary summary, SummaryStatus summaryStatus) {
         var year = summary.getYear();
         var month = summary.getMonth();
-        var trialSummary = getTrialSummary(year, month, userId);
+        var trialSummary = getTrialSummary(year, month, summary.getUser().getId());
 
         trialSummary.setId(summary.getId());
         if (trialSummary.hasActiveSessions()) {
@@ -364,7 +364,7 @@ class AttendanceService {
             throw new PermissionDeniedException("You don't have permission to confirm work summary of other user");
         }
 
-        updateWorkSummary(summary, currentUser.getId(), SummaryStatus.CONFIRMED);
+        updateWorkSummary(summary, SummaryStatus.CONFIRMED);
 
         return attendanceMapper.toWorkSummaryDto(summary);
     }
