@@ -55,28 +55,28 @@ class AttendanceController {
     }
 
     @PostMapping("/sessions")
-    public ResponseEntity<SessionDto> createSession(
+    public ResponseEntity<List<SessionDto>> createSession(
             @Valid @RequestBody CreateSessionRequest request,
             UriComponentsBuilder uriBuilder
     ) {
-        var session = attendanceService.createSession(request);
+        var sessions = attendanceService.createSession(request);
 
         var uri = uriBuilder
                 .path("/api/attendance/sessions/{id}")
-                .buildAndExpand(session.getId())
+                .buildAndExpand(sessions.get(0).getId())
                 .toUri();
 
-        return ResponseEntity.created(uri).body(session);
+        return ResponseEntity.created(uri).body(sessions);
     }
 
     @PutMapping("/sessions/{sessionId}")
-    public ResponseEntity<SessionDto> updateSession(
+    public ResponseEntity<List<SessionDto>> updateSession(
             @PathVariable(name = "sessionId") Long id,
             @Valid @RequestBody UpdateSessionRequest request
     ) {
-        var session = attendanceService.updateSession(id, request);
+        var sessions = attendanceService.updateSession(id, request);
 
-        return ResponseEntity.ok(session);
+        return ResponseEntity.ok(sessions);
     }
 
     @DeleteMapping("/sessions/{sessionId}")

@@ -269,7 +269,7 @@ class AttendanceService {
     }
 
     @Transactional
-    public SessionDto updateSession(Long sessionId, UpdateSessionRequest request) {
+    public List<SessionDto> updateSession(Long sessionId, UpdateSessionRequest request) {
         var userId = AuthService.getCurrentUserId();
         var session = attendanceSessionRepository.findById(sessionId).orElse(null);
 
@@ -299,15 +299,28 @@ class AttendanceService {
             throw new IllegalArgumentException("clockOut must be after clockIn");
         }
 
+        var additionalSessions = List.<AttendanceSession>of();
         if (session.getStatus() == SessionStatus.COMPLETED
                 && session.getClockIn() != null
                 && session.getClockOut() != null) {
             session.setWorkMinutes(Duration.between(session.getClockIn(), session.getClockOut()).toMinutes());
+
+            var user = session.getUser();
+            additionalSessions = splitSessionIfCrossDate(session, user);
+            for (var additionalSession : additionalSessions) {
+                findOrCreateWorkSummary(user, additionalSession);
+                attendanceSessionRepository.save(additionalSession);
+            }
         }
 
         attendanceSessionRepository.save(session);
 
-        return attendanceMapper.toDto(session);
+        var result = new ArrayList<SessionDto>();
+        result.add(attendanceMapper.toDto(session));
+        for (var additionalSession : additionalSessions) {
+            result.add(attendanceMapper.toDto(additionalSession));
+        }
+        return result;
     }
 
     private void updateSession(Long labelId, String description, AttendanceSession session) {
@@ -545,7 +558,7 @@ class AttendanceService {
     }
 
     @Transactional
-    public SessionDto createSession(CreateSessionRequest request) {
+    public List<SessionDto> createSession(CreateSessionRequest request) {
         if (request.getClockOut().isBefore(request.getClockIn())) {
             throw new IllegalArgumentException("Clock out must be after clock in");
         }
@@ -561,10 +574,20 @@ class AttendanceService {
             session.setDescription(request.getDescription());
         }
 
+        var additionalSessions = splitSessionIfCrossDate(session, user);
         findOrCreateWorkSummary(user, session);
         attendanceSessionRepository.save(session);
+        for (var additionalSession : additionalSessions) {
+            findOrCreateWorkSummary(user, additionalSession);
+            attendanceSessionRepository.save(additionalSession);
+        }
 
-        return attendanceMapper.toDto(session);
+        var result = new ArrayList<SessionDto>();
+        result.add(attendanceMapper.toDto(session));
+        for (var additionalSession : additionalSessions) {
+            result.add(attendanceMapper.toDto(additionalSession));
+        }
+        return result;
     }
 
     public Page<WorkSummaryDto> getWorkSummaries(int page, int size) {
