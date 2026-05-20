@@ -83,13 +83,26 @@ class AttendanceService {
     }
 
     private ActiveSessionResponse getActiveSessionResponse(AttendanceSession session, User user) {
+        return getActiveSessionResponse(session, user, List.of());
+    }
+
+    private ActiveSessionResponse getActiveSessionResponse(AttendanceSession session, User user, List<AttendanceSession> additionalSessions) {
         var hasSession = session != null;
         var workDate = hasSession ? session.getWorkDate() : LocalDate.now();
         var trialSummary = getTrialDateSummary(workDate, user.getId());
 
+        var allSessions = new ArrayList<SessionDto>();
+        if (hasSession) {
+            allSessions.add(attendanceMapper.toDto(session));
+        }
+        for (var additional : additionalSessions) {
+            allSessions.add(attendanceMapper.toDto(additional));
+        }
+
         var response = new ActiveSessionResponse();
         response.setActive(hasSession && session.getStatus() == SessionStatus.ACTIVE);
         response.setSession(attendanceMapper.toDto(session));
+        response.setSessions(allSessions);
         response.setSummary(trialSummary);
 
         if (!user.hasPermission(Permission.MANAGE_OWN_HOURLY_RATE)) {
@@ -198,7 +211,7 @@ class AttendanceService {
             attendanceSessionRepository.save(additionalSession);
         }
 
-        return getActiveSessionResponse(session, user);
+        return getActiveSessionResponse(session, user, additionalSessions);
     }
 
     private List<AttendanceSession> splitSessionIfCrossDate(AttendanceSession session, User user) {
