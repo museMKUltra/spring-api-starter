@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -189,9 +190,46 @@ class AttendanceService {
 
         AttendanceSession.updateClockOutSession(session);
         updateSession(labelId, description, session);
+
+        var additionalSessions = splitSessionIfCrossDate(session, user);
         findOrCreateWorkSummary(user, session);
+        for (var additionalSession : additionalSessions) {
+            findOrCreateWorkSummary(user, additionalSession);
+            attendanceSessionRepository.save(additionalSession);
+        }
 
         return getActiveSessionResponse(session, user);
+    }
+
+    private List<AttendanceSession> splitSessionIfCrossDate(AttendanceSession session, User user) {
+        var clockInDate = session.getWorkDate();
+        var clockOutDate = new AttendanceTime(session.getClockOut()).getDateInZone();
+
+        if (!clockOutDate.isAfter(clockInDate)) {
+            return List.of();
+        }
+
+        var additionalSessions = new ArrayList<AttendanceSession>();
+        var finalClockOut = session.getClockOut();
+
+        // Trim original session to end at midnight of the next day
+        var midnight = AttendanceTime.startOfDay(clockInDate.plusDays(1));
+        session.setClockOut(midnight);
+        session.setWorkMinutes(Duration.between(session.getClockIn(), midnight).toMinutes());
+
+        var currentDate = clockInDate.plusDays(1);
+        var currentClockIn = midnight;
+
+        while (currentDate.isBefore(clockOutDate)) {
+            var nextMidnight = AttendanceTime.startOfDay(currentDate.plusDays(1));
+            additionalSessions.add(AttendanceSession.createSplitSession(user, session, currentClockIn, nextMidnight, currentDate));
+            currentDate = currentDate.plusDays(1);
+            currentClockIn = nextMidnight;
+        }
+
+        additionalSessions.add(AttendanceSession.createSplitSession(user, session, currentClockIn, finalClockOut, clockOutDate));
+
+        return additionalSessions;
     }
 
     private void findOrCreateWorkSummary(User user, AttendanceSession session) {

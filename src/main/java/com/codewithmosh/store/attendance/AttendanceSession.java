@@ -87,6 +87,19 @@ public class AttendanceSession {
         return session;
     }
 
+    public static AttendanceSession createSplitSession(User user, AttendanceSession original, Instant clockIn, Instant clockOut, LocalDate workDate) {
+        var session = new AttendanceSession();
+        session.setUser(user);
+        session.setClockIn(clockIn);
+        session.setClockOut(clockOut);
+        session.setWorkDate(workDate);
+        session.setWorkMinutes(Duration.between(clockIn, clockOut).toMinutes());
+        session.setStatus(SessionStatus.COMPLETED);
+        session.setLabel(original.getLabel());
+        session.setDescription(original.getDescription());
+        return session;
+    }
+
     public void setLabel(AttendanceLabel label) {
         // Remove from old label if exists
         if (this.label != null) {

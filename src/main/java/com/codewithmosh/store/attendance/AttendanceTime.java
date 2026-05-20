@@ -41,4 +41,12 @@ public record AttendanceTime(Instant utcInstant) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         return utcInstant.atZone(zone).format(formatter);
     }
+
+    /**
+     * Returns the Instant corresponding to midnight (start of day) for the given
+     * local date in the zone.
+     */
+    public static Instant startOfDay(LocalDate date) {
+        return date.atStartOfDay(zone).toInstant();
+    }
 }
