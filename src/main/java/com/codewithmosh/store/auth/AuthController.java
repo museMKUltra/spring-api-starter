@@ -31,19 +31,7 @@ public class AuthController {
         return cookie;
     }
 
-    // TODO: Remove this method when cookie is no longer used
-    private void deleteOldCookie(HttpServletResponse response) {
-        var oldCookie = new Cookie("refreshToken", "");
-        oldCookie.setPath("/api/auth/refresh");
-        oldCookie.setHttpOnly(true);
-        oldCookie.setSecure(true);
-        oldCookie.setMaxAge(0);
-        response.addCookie(oldCookie);
-    }
-
     private void setCookie(HttpServletResponse response, String refreshToken, UserDto user) {
-        deleteOldCookie(response);
-
         var cookie = getCookie(refreshToken, jwtConfig.getRefreshTokenExpiration(user.isGuest()));
         response.addCookie(cookie);
     }
