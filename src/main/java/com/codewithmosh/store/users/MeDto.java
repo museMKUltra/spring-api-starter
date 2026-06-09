@@ -9,8 +9,12 @@ import java.time.Instant;
 public class MeDto extends UserDto {
     private BigDecimal hourlyRate;
 
-    public MeDto(Long id, String name, String email, boolean guest, Instant expiresAt, BigDecimal hourlyRate) {
-        super(id, name, email, guest, expiresAt);
-        this.hourlyRate = hourlyRate == null ? BigDecimal.ZERO : hourlyRate;
+    public MeDto(Long id, String name, String email, boolean guest, Instant expiresAt, Role role, BigDecimal hourlyRate) {
+        super(id, name, email, guest, expiresAt, role);
+        this.hourlyRate = hourlyRate;
+    }
+
+    public void hideHourlyRate() {
+        hourlyRate = null;
     }
 }

@@ -1,7 +1,8 @@
 package com.codewithmosh.store.users;
 
-import com.codewithmosh.store.auth.AuthService;
+import com.codewithmosh.store.attendance.PermissionDeniedException;
 import com.codewithmosh.store.auth.JwtService;
+import com.codewithmosh.store.common.ErrorDto;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,6 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-    private final AuthService authService;
     private final JwtService jwtService;
     private final UserMapper userMapper;
 
@@ -57,11 +57,9 @@ public class UserController {
     @PutMapping("/{id}")
     public UserDto updateUser(
             @PathVariable(name = "id") Long id,
-            @RequestBody UpdateUserRequest request
+            @Valid @RequestBody UpdateUserRequest request
     ) {
-        var userDto = userService.updateUser(id, request);
-
-        return userDto;
+        return userService.updateUser(id, request);
     }
 
     @DeleteMapping("/{id}")
@@ -72,7 +70,7 @@ public class UserController {
     @PostMapping("/{id}/change-password")
     public void changePassword(
             @PathVariable Long id,
-            @RequestBody ChangePasswordRequest request
+            @Valid @RequestBody ChangePasswordRequest request
     ) {
         userService.changePassword(id, request);
     }
@@ -90,7 +88,12 @@ public class UserController {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Void> handleAccessDenied() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<ErrorDto> handleAccessDenied(Exception ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ex.getMessage()));
+    }
+
+    @ExceptionHandler(PermissionDeniedException.class)
+    public ResponseEntity<ErrorDto> handlePermissionDenied(Exception ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorDto(ex.getMessage()));
     }
 }

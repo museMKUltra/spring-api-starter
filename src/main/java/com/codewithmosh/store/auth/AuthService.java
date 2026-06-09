@@ -43,7 +43,12 @@ public class AuthService {
     }
 
     public MeDto getMe() {
-        return userRepository.findMe(getCurrentUserId()).orElse(null);
+        var meDto = userRepository.findMe(getCurrentUserId()).orElse(null);
+        if (!meDto.getPermissions().contains(Permission.MANAGE_OWN_HOURLY_RATE)) {
+            meDto.hideHourlyRate();
+        }
+
+        return meDto;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -110,5 +115,21 @@ public class AuthService {
         refreshTokenService.create(user, refreshToken.toString());
 
         return new LoginResponse(accessToken, refreshToken, userMapper.toDto(user));
+    }
+
+    public boolean requireSelfOrPermission(Long id, Permission permission) {
+        if (getCurrentUserId().equals(id)) {
+            return true;
+        }
+
+        if (requirePermission(permission)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean requirePermission(Permission permission) {
+        return getCurrentUser().hasPermission(permission);
     }
 }

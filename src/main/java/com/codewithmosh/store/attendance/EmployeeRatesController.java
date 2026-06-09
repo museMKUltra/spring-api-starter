@@ -1,6 +1,5 @@
 package com.codewithmosh.store.attendance;
 
-import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.common.ErrorDto;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -14,7 +13,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping("/employee-rates")
 public class EmployeeRatesController {
     private final AttendanceService attendanceService;
-    private final AuthService authService;
 
     @PostMapping
     public ResponseEntity<EmployeeRateDto> createEmployeeRate(
@@ -38,8 +36,7 @@ public class EmployeeRatesController {
 
     @GetMapping("/current")
     public ResponseEntity<EmployeeRateDto> getCurrentEmployeeRate() {
-        var user = authService.getCurrentUser();
-        var employeeRate = attendanceService.getCurrentEmployeeRate(user);
+        var employeeRate = attendanceService.getCurrentEmployeeRate();
 
         return ResponseEntity.ok(employeeRate);
     }
@@ -47,5 +44,10 @@ public class EmployeeRatesController {
     @ExceptionHandler(EmployeeRateNotFoundException.class)
     public ResponseEntity<ErrorDto> handleEmployeeRateNotFound(Exception exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(exception.getMessage()));
+    }
+
+    @ExceptionHandler(PermissionDeniedException.class)
+    public ResponseEntity<ErrorDto> handlePermissionDenied(Exception ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorDto(ex.getMessage()));
     }
 }

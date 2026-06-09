@@ -1,6 +1,7 @@
 package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
+import com.codewithmosh.store.users.Permission;
 import com.codewithmosh.store.users.User;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -54,10 +55,10 @@ class AttendanceService {
     }
 
     public ActiveSessionResponse getActiveSession() {
-        var userId = authService.getCurrentUserId();
-        var session = getAttendanceSession(SessionStatus.ACTIVE, userId);
+        var user = authService.getCurrentUser();
+        var session = getAttendanceSession(SessionStatus.ACTIVE, user.getId());
 
-        return getActiveSessionResponse(session, userId);
+        return getActiveSessionResponse(session, user);
     }
 
     public List<SessionDto> getPeriodSessions(LocalDate startDate, LocalDate endDate) {
@@ -80,15 +81,19 @@ class AttendanceService {
                 .toList();
     }
 
-    private ActiveSessionResponse getActiveSessionResponse(AttendanceSession session, Long userId) {
+    private ActiveSessionResponse getActiveSessionResponse(AttendanceSession session, User user) {
         var hasSession = session != null;
         var workDate = hasSession ? session.getWorkDate() : LocalDate.now();
-        var trialSummary = getTrialDateSummary(workDate, userId);
+        var trialSummary = getTrialDateSummary(workDate, user.getId());
 
         var response = new ActiveSessionResponse();
         response.setActive(hasSession && session.getStatus() == SessionStatus.ACTIVE);
         response.setSession(attendanceMapper.toDto(session));
         response.setSummary(trialSummary);
+
+        if (!user.hasPermission(Permission.MANAGE_OWN_HOURLY_RATE)) {
+            response.getSummary().hideHourlyRate();
+        }
 
         return response;
     }
@@ -96,6 +101,10 @@ class AttendanceService {
     @Transactional
     public EmployeeRateDto createEmployeeRate(BigDecimal hourlyRate) {
         var user = authService.getCurrentUser();
+        if (!user.hasPermission(Permission.MANAGE_OWN_HOURLY_RATE)) {
+            throw new PermissionDeniedException("You don't have permission to create own hourly rate");
+        }
+
         var now = new AttendanceTime();
 
         getEffectiveRate(user.getId())
@@ -118,6 +127,11 @@ class AttendanceService {
     }
 
     public EmployeeRateDto getEmployeeRate(Long rateId) {
+        var user = authService.getCurrentUser();
+        if (!user.hasPermission(Permission.MANAGE_ALL_HOURLY_RATE)) {
+            throw new PermissionDeniedException("You don't have permission to manage hourly rate");
+        }
+
         var employeeRate = employeeRateRepository.findById(rateId).orElse(null);
 
         if (employeeRate == null) {
@@ -127,7 +141,12 @@ class AttendanceService {
         return attendanceMapper.toEmployeeRateDto(employeeRate);
     }
 
-    public EmployeeRateDto getCurrentEmployeeRate(User user) {
+    public EmployeeRateDto getCurrentEmployeeRate() {
+        var user = authService.getCurrentUser();
+        if (!user.hasPermission(Permission.MANAGE_OWN_HOURLY_RATE)) {
+            throw new PermissionDeniedException("You don't have permission to get own hourly rate");
+        }
+
         var employeeRate = getEffectiveRate(user.getId()).orElse(null);
 
         if (employeeRate == null) {
@@ -144,13 +163,12 @@ class AttendanceService {
             throw new ActiveSessionExistException();
         }
 
-        var userId = user.getId();
         var session = AttendanceSession.createClockInSession(user);
         var workDate = session.getWorkDate();
         var year = workDate.getYear();
         var month = (short) workDate.getMonthValue();
 
-        var workSummary = workSummaryRepository.findWorkSummary(userId, year, month).orElse(null);
+        var workSummary = workSummaryRepository.findWorkSummary(user.getId(), year, month).orElse(null);
         if (workSummary != null && workSummary.getStatus() != SummaryStatus.DRAFT) {
             throw new WorkSummaryHasBeenConfirmedException();
         }
@@ -158,7 +176,7 @@ class AttendanceService {
         updateSession(labelId, description, session);
         attendanceSessionRepository.save(session);
 
-        return getActiveSessionResponse(session, userId);
+        return getActiveSessionResponse(session, user);
     }
 
     @Transactional
@@ -173,7 +191,7 @@ class AttendanceService {
         updateSession(labelId, description, session);
         findOrCreateWorkSummary(user, session);
 
-        return getActiveSessionResponse(session, user.getId());
+        return getActiveSessionResponse(session, user);
     }
 
     private void findOrCreateWorkSummary(User user, AttendanceSession session) {
@@ -295,24 +313,30 @@ class AttendanceService {
         return new TrialSummaryDto(year, month, date, employeeRate, sessions);
     }
 
-    public TrialSummaryDto previewWorkSummary(Integer year, Short month) {
-        var userId = AuthService.getCurrentUserId();
+    public TrialSummaryDto previewWorkSummary(Integer year, Short month, Long userId) {
+        var currentUser = authService.getCurrentUser();
+        if (!currentUser.hasPermission(Permission.PREVIEW_OWN_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to preview work summary");
+        }
+
+        if (userId == null) {
+            return getTrialSummary(year, month, AuthService.getCurrentUserId());
+        }
+
+        var isTheSameUser = currentUser.getId().equals(userId);
+        if (!isTheSameUser && !currentUser.hasPermission(Permission.PREVIEW_ALL_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to preview work summary of other user");
+        }
 
         return getTrialSummary(year, month, userId);
     }
 
-    public WorkSummaryDto confirmWorkSummary(Long summaryId) {
-        var summary = workSummaryRepository.findByIdAndStatus(summaryId, SummaryStatus.DRAFT).orElse(null);
-        if (summary == null) {
-            throw new DraftWorkSummaryNotFoundException();
-        }
-
-        var userId = AuthService.getCurrentUserId();
+    private void updateWorkSummary(WorkSummary summary, SummaryStatus summaryStatus) {
         var year = summary.getYear();
         var month = summary.getMonth();
-        var trialSummary = getTrialSummary(year, month, userId);
+        var trialSummary = getTrialSummary(year, month, summary.getUser().getId());
 
-        trialSummary.setId(summaryId);
+        trialSummary.setId(summary.getId());
         if (trialSummary.hasActiveSessions()) {
             throw new ActiveSessionExistException();
         }
@@ -320,7 +344,43 @@ class AttendanceService {
         summary.setHourlyRate(trialSummary.getHourlyRate());
         summary.setTotalMinutes(trialSummary.getTotalMinutes());
         summary.setSalaryAmount(trialSummary.getSalaryAmount());
-        summary.setStatus(SummaryStatus.CONFIRMED);
+        summary.setStatus(summaryStatus);
+        workSummaryRepository.save(summary);
+    }
+
+    public WorkSummaryDto confirmWorkSummary(Long summaryId) {
+        var currentUser = authService.getCurrentUser();
+        if (!currentUser.hasPermission(Permission.CONFIRM_OWN_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to confirm own work summary");
+        }
+
+        var summary = workSummaryRepository.findByIdAndStatus(summaryId, SummaryStatus.DRAFT).orElse(null);
+        if (summary == null) {
+            throw new DraftWorkSummaryNotFoundException();
+        }
+
+        var isTheSameUser = summary.getUser().getId().equals(currentUser.getId());
+        if (!isTheSameUser && !currentUser.hasPermission(Permission.CONFIRM_ALL_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to confirm work summary of other user");
+        }
+
+        updateWorkSummary(summary, SummaryStatus.CONFIRMED);
+
+        return attendanceMapper.toWorkSummaryDto(summary);
+    }
+
+    public WorkSummaryDto payWorkSummary(Long summaryId) {
+        var currentUser = authService.getCurrentUser();
+        if (!currentUser.hasPermission(Permission.PAY_ALL_WORK_SUMMARY)) {
+            throw new PermissionDeniedException("You don't have permission to pay work summary");
+        }
+
+        var summary = workSummaryRepository.findByIdAndStatus(summaryId, SummaryStatus.CONFIRMED).orElse(null);
+        if (summary == null) {
+            throw new DraftWorkSummaryNotFoundException();
+        }
+
+        summary.setStatus(SummaryStatus.PAID);
         workSummaryRepository.save(summary);
 
         return attendanceMapper.toWorkSummaryDto(summary);

@@ -1,8 +1,6 @@
 package com.codewithmosh.store.attendance;
 
-import com.codewithmosh.store.auth.AuthService;
 import com.codewithmosh.store.common.ErrorDto;
-import com.codewithmosh.store.users.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -15,13 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/work-summary")
 class WorkSummaryController {
-    private final WorkSummaryRepository workSummaryRepository;
-    private final AuthService authService;
-    private final AttendanceMapper attendanceMapper;
     private final AttendanceService attendanceService;
-    private final AttendanceSessionRepository attendanceSessionRepository;
-    private final UserRepository userRepository;
-    private final EmployeeRateRepository employeeRateRepository;
 
     @GetMapping
     public ResponseEntity<WorkSummaryDto> getWorkSummary(
@@ -52,9 +44,10 @@ class WorkSummaryController {
     @GetMapping("/preview")
     public ResponseEntity<TrialSummaryDto> previewWorkSummary(
             @RequestParam Integer year,
-            @RequestParam Short month
+            @RequestParam Short month,
+            @RequestParam(required = false) Long userId
     ) {
-        var summaryDto = attendanceService.previewWorkSummary(year, month);
+        var summaryDto = attendanceService.previewWorkSummary(year, month, userId);
 
         return ResponseEntity.ok(summaryDto);
     }
@@ -68,8 +61,22 @@ class WorkSummaryController {
         return ResponseEntity.ok(workSummaryDto);
     }
 
+    @PostMapping("/{summaryId}/pay")
+    public ResponseEntity<WorkSummaryDto> payWorkSummary(
+            @PathVariable Long summaryId
+    ) {
+        var workSummaryDto = attendanceService.payWorkSummary(summaryId);
+
+        return ResponseEntity.ok(workSummaryDto);
+    }
+
     @ExceptionHandler({WorkSummaryNotFoundException.class, DraftWorkSummaryNotFoundException.class, ActiveSessionExistException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));
+    }
+
+    @ExceptionHandler(PermissionDeniedException.class)
+    public ResponseEntity<ErrorDto> handlePermissionDenied(Exception ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorDto(ex.getMessage()));
     }
 }
