@@ -47,6 +47,11 @@ public class Project {
         return project;
     }
 
+    public void update(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
     public void archive() {
         status = ProjectStatus.ARCHIVED;
     }

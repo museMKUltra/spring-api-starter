@@ -24,6 +24,23 @@ class ProjectService {
         return projectMapper.toDto(project);
     }
 
+    public ProjectDto updateProject(Long id, String name, String description) {
+        var userId = AuthService.getCurrentUserId();
+        var project = projectRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        var hasExistName = projectRepository.existsByUserIdAndNameAndIdNot(userId, name, id);
+        if (hasExistName) {
+            throw new ProjectNameAlreadyExistException();
+        }
+
+        project.update(name, description);
+        projectRepository.save(project);
+
+        return projectMapper.toDto(project);
+    }
+
     public ProjectDto archiveProject(Long id) {
         var userId = AuthService.getCurrentUserId();
         var project = projectRepository

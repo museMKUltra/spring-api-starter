@@ -25,6 +25,16 @@ class ProjectController {
         return ResponseEntity.created(uri).body(project);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ProjectDto> updateProject(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateProjectRequest request
+    ) {
+        var project = projectService.updateProject(id, request.getName(), request.getDescription());
+
+        return ResponseEntity.ok(project);
+    }
+
     @PostMapping("/{id}/archive")
     public ResponseEntity<ProjectDto> archiveProject(@PathVariable Long id) {
         var project = projectService.archiveProject(id);
