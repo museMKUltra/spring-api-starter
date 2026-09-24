@@ -8,11 +8,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/projects")
 class ProjectController {
     private final ProjectService projectService;
+
+    @GetMapping
+    public List<ProjectDto> getProjects() {
+        return projectService.getProjects();
+    }
 
     @PostMapping
     public ResponseEntity<ProjectDto> createProject(
