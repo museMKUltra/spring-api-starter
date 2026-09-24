@@ -64,4 +64,16 @@ class ProjectService {
 
         return projectMapper.toDto(project);
     }
+
+    public ProjectDto restoreProject(Long id) {
+        var userId = AuthService.getCurrentUserId();
+        var project = projectRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        project.restore();
+        projectRepository.save(project);
+
+        return projectMapper.toDto(project);
+    }
 }

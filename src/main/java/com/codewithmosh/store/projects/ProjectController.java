@@ -49,6 +49,13 @@ class ProjectController {
         return ResponseEntity.ok(project);
     }
 
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<ProjectDto> restoreProject(@PathVariable Long id) {
+        var project = projectService.restoreProject(id);
+
+        return ResponseEntity.ok(project);
+    }
+
     @ExceptionHandler({ProjectNotFoundException.class, ProjectNameAlreadyExistException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));
