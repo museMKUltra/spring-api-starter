@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AttendanceMapper {
+    @Mapping(source = "project.id", target = "projectId")
     SessionDto toDto(AttendanceSession session);
 
     EmployeeRateDto toEmployeeRateDto(EmployeeRate employeeRate);

@@ -56,6 +56,10 @@ public class Project {
         status = ProjectStatus.ARCHIVED;
     }
 
+    public boolean isArchived() {
+        return status == ProjectStatus.ARCHIVED;
+    }
+
     public void restore() {
         status = ProjectStatus.ACTIVE;
     }

@@ -1,5 +1,6 @@
 package com.codewithmosh.store.attendance;
 
+import com.codewithmosh.store.projects.Project;
 import com.codewithmosh.store.users.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -35,6 +36,10 @@ public class AttendanceLabel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     @Column(name = "deleted_at")
     private Instant deletedAt;

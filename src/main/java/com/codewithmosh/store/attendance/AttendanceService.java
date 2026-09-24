@@ -1,6 +1,10 @@
 package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
+import com.codewithmosh.store.projects.Project;
+import com.codewithmosh.store.projects.ProjectArchivedException;
+import com.codewithmosh.store.projects.ProjectNotFoundException;
+import com.codewithmosh.store.projects.ProjectRepository;
 import com.codewithmosh.store.users.Permission;
 import com.codewithmosh.store.users.User;
 import jakarta.transaction.Transactional;
@@ -27,6 +31,22 @@ class AttendanceService {
     private final EmployeeRateRepository employeeRateRepository;
     private final AttendanceLabelRepository attendanceLabelRepository;
     private final WorkSummaryRepository workSummaryRepository;
+    private final ProjectRepository projectRepository;
+
+    private Project getProject(Long projectId, Long userId) {
+        return projectRepository
+                .findByIdAndUserId(projectId, userId)
+                .orElseThrow(ProjectNotFoundException::new);
+    }
+
+    private Project getActiveProject(Long projectId, Long userId) {
+        var project = getProject(projectId, userId);
+        if (project.isArchived()) {
+            throw new ProjectArchivedException();
+        }
+
+        return project;
+    }
 
     private List<AttendanceSession> getAttendanceSessions(SessionStatus status, Long userId) {
         return attendanceSessionRepository.findByUserIdAndStatus(userId, status);
@@ -54,14 +74,21 @@ class AttendanceService {
         return sessions.isEmpty() ? null : sessions.get(sessions.size() - 1);
     }
 
-    public ActiveSessionResponse getActiveSession() {
+    private AttendanceSession getProjectActiveSession(Long userId, Long projectId) {
+        var session = getAttendanceSession(SessionStatus.ACTIVE, userId);
+
+        return session != null && session.getProject().getId().equals(projectId) ? session : null;
+    }
+
+    public ActiveSessionResponse getActiveSession(Long projectId) {
         var user = authService.getCurrentUser();
-        var session = getAttendanceSession(SessionStatus.ACTIVE, user.getId());
+        getProject(projectId, user.getId());
+        var session = getProjectActiveSession(user.getId(), projectId);
 
         return getActiveSessionResponse(session, user);
     }
 
-    public List<SessionDto> getPeriodSessions(LocalDate startDate, LocalDate endDate) {
+    public List<SessionDto> getPeriodSessions(Long projectId, LocalDate startDate, LocalDate endDate) {
         var dateInZone = new AttendanceTime().getDateInZone();
         startDate = startDate == null ? dateInZone : startDate;
         endDate = endDate == null ? dateInZone.plusDays(1) : endDate;
@@ -71,8 +98,9 @@ class AttendanceService {
         }
 
         var userId = AuthService.getCurrentUserId();
+        getProject(projectId, userId);
         var sessions = attendanceSessionRepository
-                .getSessionsForPeriod(userId, startDate, endDate);
+                .getProjectSessionsForPeriod(projectId, startDate, endDate);
 
         return sessions.stream()
                 .filter(session -> session.getStatus() == SessionStatus.COMPLETED)
@@ -157,13 +185,14 @@ class AttendanceService {
     }
 
     @Transactional
-    public ActiveSessionResponse clockIn(Long labelId, String description) {
+    public ActiveSessionResponse clockIn(Long projectId, Long labelId, String description) {
         var user = authService.getCurrentUser();
+        var project = getActiveProject(projectId, user.getId());
         if (hasActiveSessionAndAutoCancel(user)) {
             throw new ActiveSessionExistException();
         }
 
-        var session = AttendanceSession.createClockInSession(user);
+        var session = AttendanceSession.createClockInSession(user, project);
         var workDate = session.getWorkDate();
         var year = workDate.getYear();
         var month = (short) workDate.getMonthValue();
@@ -180,9 +209,10 @@ class AttendanceService {
     }
 
     @Transactional
-    public ActiveSessionResponse clockOut(Long labelId, String description) {
+    public ActiveSessionResponse clockOut(Long projectId, Long labelId, String description) {
         var user = authService.getCurrentUser();
-        var session = getAttendanceSession(SessionStatus.ACTIVE, user.getId());
+        getProject(projectId, user.getId());
+        var session = getProjectActiveSession(user.getId(), projectId);
         if (session == null) {
             throw new ActiveSessionNotFoundException();
         }
@@ -275,10 +305,9 @@ class AttendanceService {
             return;
         }
 
-        var label = attendanceLabelRepository.findById(labelId).orElse(null);
-        if (label == null) {
-            throw new LabelNotFoundException();
-        }
+        var label = attendanceLabelRepository
+                .getExistProjectLabel(session.getProject().getId(), labelId)
+                .orElseThrow(LabelNotFoundException::new);
         session.setLabel(label);
     }
 
@@ -386,21 +415,23 @@ class AttendanceService {
         return attendanceMapper.toWorkSummaryDto(summary);
     }
 
-    public List<LabelDto> getLabels() {
+    public List<LabelDto> getLabels(Long projectId) {
         var userId = AuthService.getCurrentUserId();
+        getProject(projectId, userId);
 
-        return attendanceLabelRepository.getExistLabels(userId, true)
+        return attendanceLabelRepository.getExistLabels(projectId)
                 .stream().map(attendanceMapper::toLabelDto).toList();
     }
 
-    public LabelDto createLabel(String name, String color) {
+    public LabelDto createLabel(Long projectId, String name, String color) {
         var user = authService.getCurrentUser();
-        var hasExistName = attendanceLabelRepository.existsByName(user.getId(), name);
+        var project = getActiveProject(projectId, user.getId());
+        var hasExistName = attendanceLabelRepository.existsByName(projectId, name);
         if (hasExistName) {
             throw new LabelNameAlreadyExistException();
         }
 
-        var maxSortOrder = attendanceLabelRepository.findMaxSortOrder(user.getId());
+        var maxSortOrder = attendanceLabelRepository.findMaxSortOrder(projectId);
         var nextSortOrder = maxSortOrder == null ? 0 : maxSortOrder + 1;
 
         var label = new AttendanceLabel();
@@ -408,6 +439,7 @@ class AttendanceService {
         label.setColor(color);
         label.setType(LabelType.WORK);
         label.setSortOrder(nextSortOrder);
+        label.setProject(project);
 
         user.addAttendanceLabel(label);
         attendanceLabelRepository.save(label);
@@ -423,7 +455,7 @@ class AttendanceService {
         }
 
         if (name != null && !name.equals(label.getName())) {
-            var hasExistName = attendanceLabelRepository.existsByName(name, id);
+            var hasExistName = attendanceLabelRepository.existsByName(label.getProject().getId(), name, id);
             if (hasExistName) {
                 throw new LabelNameAlreadyExistException();
             }
@@ -448,26 +480,21 @@ class AttendanceService {
         label.setDeletedAt(Instant.now());
         label.setSortOrder(0);
 
-        var remainingLabels = attendanceLabelRepository.getExistLabels(userId, false);
+        var remainingLabels = attendanceLabelRepository.getExistLabels(label.getProject().getId());
         for (int i = 0; i < remainingLabels.size(); i++) {
             remainingLabels.get(i).setSortOrder(i);
         }
     }
 
     @Transactional
-    public void reorderLabels(List<Long> ids) {
+    public void reorderLabels(Long projectId, List<Long> ids) {
         var userId = AuthService.getCurrentUserId();
+        getProject(projectId, userId);
         List<AttendanceLabel> labels = attendanceLabelRepository.findAllById(ids);
 
-        // Safety check: ensure all belong to user
+        // Safety check: ensure all belong to the project
         for (AttendanceLabel l : labels) {
-            var user = l.getUser();
-
-            if (user == null) {
-                throw new IllegalArgumentException("Global labels cannot be reordered");
-            }
-
-            if (!user.getId().equals(userId)) {
+            if (!l.getProject().getId().equals(projectId) || l.getDeletedAt() != null) {
                 throw new IllegalArgumentException("Invalid label ownership");
             }
         }
@@ -494,13 +521,14 @@ class AttendanceService {
     }
 
     @Transactional
-    public SessionDto createSession(CreateSessionRequest request) {
+    public SessionDto createSession(Long projectId, CreateSessionRequest request) {
         if (request.getClockOut().isBefore(request.getClockIn())) {
             throw new IllegalArgumentException("Clock out must be after clock in");
         }
 
         var user = authService.getCurrentUser();
-        var session = AttendanceSession.createSession(user, request);
+        var project = getActiveProject(projectId, user.getId());
+        var session = AttendanceSession.createSession(user, project, request);
 
         if (request.getLabelId() != null) {
             updateSessionLabel(request.getLabelId(), session);

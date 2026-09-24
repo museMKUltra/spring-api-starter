@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Data
 public class SessionDto {
     private Long id;
+    private Long projectId;
     private Instant clockIn;
     private Instant clockOut;
     private LocalDate workDate;

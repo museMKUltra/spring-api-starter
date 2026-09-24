@@ -24,6 +24,17 @@ public interface AttendanceSessionRepository extends CrudRepository<AttendanceSe
             @Param("endDate") LocalDate endDate
     );
 
+    @Query("select a from AttendanceSession a " +
+            "left join fetch a.label " +
+            "where a.project.id = :projectId " +
+            "and a.workDate >= :startDate " +
+            "and a.workDate < :endDate")
+    List<AttendanceSession> getProjectSessionsForPeriod(
+            @Param("projectId") Long projectId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
     @EntityGraph(attributePaths = {"user", "label"})
     List<AttendanceSession> findByUserIdAndWorkDate(Long userId, LocalDate workDate);
 
