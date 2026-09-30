@@ -15,6 +15,10 @@ public interface WorkSummaryRepository extends CrudRepository<WorkSummary, Long>
     @Query("select w from WorkSummary w where w.user.id = :userId and w.year = :year and w.month = :month")
     Optional<WorkSummary> findWorkSummary(@Param("userId") Long userId, @Param("year") Integer year, @Param("month") Short month);
 
+    @EntityGraph(attributePaths = "user")
+    @Query("select w from WorkSummary w where w.user.id = :userId and w.project.id = :projectId and w.year = :year and w.month = :month")
+    Optional<WorkSummary> findProjectWorkSummary(@Param("userId") Long userId, @Param("projectId") Long projectId, @Param("year") Integer year, @Param("month") Short month);
+
     @Query("select w from WorkSummary w where w.user.id = :userId and w.year = :year and w.month = :month and w.status = :status")
     Optional<WorkSummary> findWorkSummaryWithStatus(@Param("userId") Long userId, @Param("year") Integer year, @Param("month") Short month, @Param("status") SummaryStatus status);
 
@@ -27,4 +31,12 @@ public interface WorkSummaryRepository extends CrudRepository<WorkSummary, Long>
     @EntityGraph(attributePaths = "user")
     @Query("select w from WorkSummary w where w.user.id = :userId order by w.year DESC, w.month DESC")
     Page<WorkSummary> findWorkSummariesPaged(@Param("userId") Long userId, Pageable pageable);
+
+    @EntityGraph(attributePaths = "user")
+    @Query("select w from WorkSummary w where w.user.id = :userId and w.project.id = :projectId order by w.year DESC, w.month DESC")
+    List<WorkSummary> findProjectWorkSummaryOptions(@Param("userId") Long userId, @Param("projectId") Long projectId);
+
+    @EntityGraph(attributePaths = "user")
+    @Query("select w from WorkSummary w where w.user.id = :userId and w.project.id = :projectId order by w.year DESC, w.month DESC")
+    Page<WorkSummary> findProjectWorkSummariesPaged(@Param("userId") Long userId, @Param("projectId") Long projectId, Pageable pageable);
 }

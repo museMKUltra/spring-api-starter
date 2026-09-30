@@ -311,21 +311,32 @@ class AttendanceService {
         session.setLabel(label);
     }
 
-    public WorkSummaryDto getWorkSummary(Integer year, Short month) {
+    public WorkSummaryDto getWorkSummary(Integer year, Short month, Long projectId) {
         var userId = AuthService.getCurrentUserId();
-        var workSummary = workSummaryRepository.findWorkSummary(userId, year, month).orElse(null);
-        if (workSummary == null) {
-            throw new WorkSummaryNotFoundException();
+        Optional<WorkSummary> workSummary;
+        if (projectId == null) {
+            workSummary = workSummaryRepository.findWorkSummary(userId, year, month);
+        } else {
+            getProject(projectId, userId);
+            workSummary = workSummaryRepository.findProjectWorkSummary(userId, projectId, year, month);
         }
 
-        return attendanceMapper.toWorkSummaryDto(workSummary);
+        return workSummary
+                .map(attendanceMapper::toWorkSummaryDto)
+                .orElseThrow(WorkSummaryNotFoundException::new);
     }
 
     private TrialSummaryDto getTrialSummary(Integer year, Short month, Long userId) {
+        return getTrialSummary(year, month, userId, null);
+    }
+
+    private TrialSummaryDto getTrialSummary(Integer year, Short month, Long userId, Long projectId) {
         var startDate = LocalDate.of(year, month, 1);
         var endDate = startDate.plusMonths(1);
 
-        var sessions = attendanceSessionRepository.getSessionsForPeriod(userId, startDate, endDate);
+        var sessions = projectId == null
+                ? attendanceSessionRepository.getSessionsForPeriod(userId, startDate, endDate)
+                : attendanceSessionRepository.getUserProjectSessionsForPeriod(userId, projectId, startDate, endDate);
         var employeeRate = getEffectiveRate(userId).orElse(null);
 
         return new TrialSummaryDto(year, month, employeeRate, sessions);
@@ -342,22 +353,26 @@ class AttendanceService {
         return new TrialSummaryDto(year, month, date, employeeRate, sessions);
     }
 
-    public TrialSummaryDto previewWorkSummary(Integer year, Short month, Long userId) {
+    public TrialSummaryDto previewWorkSummary(Integer year, Short month, Long userId, Long projectId) {
         var currentUser = authService.getCurrentUser();
         if (!currentUser.hasPermission(Permission.PREVIEW_OWN_WORK_SUMMARY)) {
             throw new PermissionDeniedException("You don't have permission to preview work summary");
         }
 
         if (userId == null) {
-            return getTrialSummary(year, month, AuthService.getCurrentUserId());
+            userId = currentUser.getId();
+        } else {
+            var isTheSameUser = currentUser.getId().equals(userId);
+            if (!isTheSameUser && !currentUser.hasPermission(Permission.PREVIEW_ALL_WORK_SUMMARY)) {
+                throw new PermissionDeniedException("You don't have permission to preview work summary of other user");
+            }
         }
 
-        var isTheSameUser = currentUser.getId().equals(userId);
-        if (!isTheSameUser && !currentUser.hasPermission(Permission.PREVIEW_ALL_WORK_SUMMARY)) {
-            throw new PermissionDeniedException("You don't have permission to preview work summary of other user");
+        if (projectId != null) {
+            getProject(projectId, userId);
         }
 
-        return getTrialSummary(year, month, userId);
+        return getTrialSummary(year, month, userId, projectId);
     }
 
     private void updateWorkSummary(WorkSummary summary, SummaryStatus summaryStatus) {
@@ -544,16 +559,29 @@ class AttendanceService {
         return attendanceMapper.toDto(session);
     }
 
-    public Page<WorkSummaryDto> getWorkSummaries(int page, int size) {
+    public Page<WorkSummaryDto> getWorkSummaries(int page, int size, Long projectId) {
         var userId = AuthService.getCurrentUserId();
         var pageable = PageRequest.of(page, size);
-        return workSummaryRepository.findWorkSummariesPaged(userId, pageable)
-                .map(attendanceMapper::toWorkSummaryDto);
+        Page<WorkSummary> workSummaries;
+        if (projectId == null) {
+            workSummaries = workSummaryRepository.findWorkSummariesPaged(userId, pageable);
+        } else {
+            getProject(projectId, userId);
+            workSummaries = workSummaryRepository.findProjectWorkSummariesPaged(userId, projectId, pageable);
+        }
+
+        return workSummaries.map(attendanceMapper::toWorkSummaryDto);
     }
 
-    public List<WorkSummaryOption> getWorkSummaryOptions() {
+    public List<WorkSummaryOption> getWorkSummaryOptions(Long projectId) {
         var userId = AuthService.getCurrentUserId();
-        var workSummaries = workSummaryRepository.findWorkSummaryOptions(userId);
+        List<WorkSummary> workSummaries;
+        if (projectId == null) {
+            workSummaries = workSummaryRepository.findWorkSummaryOptions(userId);
+        } else {
+            getProject(projectId, userId);
+            workSummaries = workSummaryRepository.findProjectWorkSummaryOptions(userId, projectId);
+        }
         var options = workSummaries.stream()
                 .map(attendanceMapper::toWorkSummaryOption)
                 .collect(Collectors.toList());

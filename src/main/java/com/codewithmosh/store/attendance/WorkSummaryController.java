@@ -1,6 +1,7 @@
 package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.common.ErrorDto;
+import com.codewithmosh.store.projects.ProjectNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,10 @@ class WorkSummaryController {
     @GetMapping
     public ResponseEntity<WorkSummaryDto> getWorkSummary(
             @RequestParam Integer year,
-            @RequestParam Short month
+            @RequestParam Short month,
+            @RequestParam(required = false) Long projectId
     ) {
-        var workSummaryDto = attendanceService.getWorkSummary(year, month);
+        var workSummaryDto = attendanceService.getWorkSummary(year, month, projectId);
 
         return ResponseEntity.ok(workSummaryDto);
     }
@@ -28,15 +30,18 @@ class WorkSummaryController {
     @GetMapping("/list")
     public ResponseEntity<Page<WorkSummaryDto>> getWorkSummaries(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long projectId
     ) {
-        var result = attendanceService.getWorkSummaries(page, size);
+        var result = attendanceService.getWorkSummaries(page, size, projectId);
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/options")
-    public ResponseEntity<List<WorkSummaryOption>> getWorkSummaryOptions() {
-        var options = attendanceService.getWorkSummaryOptions();
+    public ResponseEntity<List<WorkSummaryOption>> getWorkSummaryOptions(
+            @RequestParam(required = false) Long projectId
+    ) {
+        var options = attendanceService.getWorkSummaryOptions(projectId);
 
         return ResponseEntity.ok(options);
     }
@@ -45,9 +50,10 @@ class WorkSummaryController {
     public ResponseEntity<TrialSummaryDto> previewWorkSummary(
             @RequestParam Integer year,
             @RequestParam Short month,
-            @RequestParam(required = false) Long userId
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Long projectId
     ) {
-        var summaryDto = attendanceService.previewWorkSummary(year, month, userId);
+        var summaryDto = attendanceService.previewWorkSummary(year, month, userId, projectId);
 
         return ResponseEntity.ok(summaryDto);
     }
@@ -70,7 +76,7 @@ class WorkSummaryController {
         return ResponseEntity.ok(workSummaryDto);
     }
 
-    @ExceptionHandler({WorkSummaryNotFoundException.class, DraftWorkSummaryNotFoundException.class, ActiveSessionExistException.class})
+    @ExceptionHandler({WorkSummaryNotFoundException.class, DraftWorkSummaryNotFoundException.class, ActiveSessionExistException.class, ProjectNotFoundException.class})
     public ResponseEntity<ErrorDto> handleBadRequest(Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(exception.getMessage()));
     }
