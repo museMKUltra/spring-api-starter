@@ -197,7 +197,9 @@ class AttendanceService {
         var year = workDate.getYear();
         var month = (short) workDate.getMonthValue();
 
-        var workSummary = workSummaryRepository.findWorkSummary(user.getId(), year, month).orElse(null);
+        var workSummary = workSummaryRepository
+                .findProjectWorkSummary(user.getId(), projectId, year, month)
+                .orElse(null);
         if (workSummary != null && workSummary.getStatus() != SummaryStatus.DRAFT) {
             throw new WorkSummaryHasBeenConfirmedException();
         }
@@ -226,14 +228,18 @@ class AttendanceService {
 
     private void findOrCreateWorkSummary(User user, AttendanceSession session) {
         var userId = user.getId();
+        var project = session.getProject();
         var year = session.getWorkDate().getYear();
         var month = (short) session.getWorkDate().getMonthValue();
 
-        var workSummary = workSummaryRepository.findWorkSummary(userId, year, month).orElse(null);
+        var workSummary = workSummaryRepository
+                .findProjectWorkSummary(userId, project.getId(), year, month)
+                .orElse(null);
         if (workSummary == null) {
             var newWorkSummary = new WorkSummary();
             newWorkSummary.setStatus(SummaryStatus.DRAFT);
             newWorkSummary.setUser(user);
+            newWorkSummary.setProject(project);
             newWorkSummary.setYear(year);
             newWorkSummary.setMonth(month);
 
@@ -313,21 +319,11 @@ class AttendanceService {
 
     public WorkSummaryDto getWorkSummary(Integer year, Short month, Long projectId) {
         var userId = AuthService.getCurrentUserId();
-        Optional<WorkSummary> workSummary;
-        if (projectId == null) {
-            workSummary = workSummaryRepository.findWorkSummary(userId, year, month);
-        } else {
-            getProject(projectId, userId);
-            workSummary = workSummaryRepository.findProjectWorkSummary(userId, projectId, year, month);
-        }
+        getProject(projectId, userId);
 
-        return workSummary
+        return workSummaryRepository.findProjectWorkSummary(userId, projectId, year, month)
                 .map(attendanceMapper::toWorkSummaryDto)
                 .orElseThrow(WorkSummaryNotFoundException::new);
-    }
-
-    private TrialSummaryDto getTrialSummary(Integer year, Short month, Long userId) {
-        return getTrialSummary(year, month, userId, null);
     }
 
     private TrialSummaryDto getTrialSummary(Integer year, Short month, Long userId, Long projectId) {
@@ -378,7 +374,7 @@ class AttendanceService {
     private void updateWorkSummary(WorkSummary summary, SummaryStatus summaryStatus) {
         var year = summary.getYear();
         var month = summary.getMonth();
-        var trialSummary = getTrialSummary(year, month, summary.getUser().getId());
+        var trialSummary = getTrialSummary(year, month, summary.getUser().getId(), summary.getProject().getId());
 
         trialSummary.setId(summary.getId());
         if (trialSummary.hasActiveSessions()) {

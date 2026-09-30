@@ -20,7 +20,7 @@ class WorkSummaryController {
     public ResponseEntity<WorkSummaryDto> getWorkSummary(
             @RequestParam Integer year,
             @RequestParam Short month,
-            @RequestParam(required = false) Long projectId
+            @RequestParam Long projectId
     ) {
         var workSummaryDto = attendanceService.getWorkSummary(year, month, projectId);
 
