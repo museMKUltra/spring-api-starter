@@ -51,7 +51,7 @@ class WorkSummaryController {
             @RequestParam Integer year,
             @RequestParam Short month,
             @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) Long projectId
+            @RequestParam Long projectId
     ) {
         var summaryDto = attendanceService.previewWorkSummary(year, month, userId, projectId);
 

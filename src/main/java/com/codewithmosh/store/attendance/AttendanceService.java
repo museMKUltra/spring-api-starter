@@ -330,9 +330,7 @@ class AttendanceService {
         var startDate = LocalDate.of(year, month, 1);
         var endDate = startDate.plusMonths(1);
 
-        var sessions = projectId == null
-                ? attendanceSessionRepository.getSessionsForPeriod(userId, startDate, endDate)
-                : attendanceSessionRepository.getUserProjectSessionsForPeriod(userId, projectId, startDate, endDate);
+        var sessions = attendanceSessionRepository.getUserProjectSessionsForPeriod(userId, projectId, startDate, endDate);
         var employeeRate = getEffectiveRate(userId).orElse(null);
 
         return new TrialSummaryDto(year, month, employeeRate, sessions);
@@ -364,9 +362,7 @@ class AttendanceService {
             }
         }
 
-        if (projectId != null) {
-            getProject(projectId, userId);
-        }
+        getProject(projectId, userId);
 
         return getTrialSummary(year, month, userId, projectId);
     }
