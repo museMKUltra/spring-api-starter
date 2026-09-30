@@ -23,6 +23,15 @@ class ProjectService {
                 .toList();
     }
 
+    public ProjectDto getProject(Long id) {
+        var userId = AuthService.getCurrentUserId();
+        var project = projectRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        return projectMapper.toDto(project);
+    }
+
     public ProjectDto createProject(String name, String description) {
         var user = authService.getCurrentUser();
         var hasExistName = projectRepository.existsByUserIdAndName(user.getId(), name);
