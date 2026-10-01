@@ -1,10 +1,7 @@
 package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.auth.AuthService;
-import com.codewithmosh.store.projects.Project;
-import com.codewithmosh.store.projects.ProjectArchivedException;
-import com.codewithmosh.store.projects.ProjectNotFoundException;
-import com.codewithmosh.store.projects.ProjectRepository;
+import com.codewithmosh.store.projects.*;
 import com.codewithmosh.store.users.Permission;
 import com.codewithmosh.store.users.User;
 import jakarta.transaction.Transactional;
@@ -19,8 +16,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -32,6 +29,7 @@ class AttendanceService {
     private final AttendanceLabelRepository attendanceLabelRepository;
     private final WorkSummaryRepository workSummaryRepository;
     private final ProjectRepository projectRepository;
+    private final ProjectMapper projectMapper;
 
     private Project getProject(Long projectId, Long userId) {
         return projectRepository
@@ -565,18 +563,49 @@ class AttendanceService {
         return workSummaries.map(attendanceMapper::toWorkSummaryDto);
     }
 
-    public List<WorkSummaryOption> getWorkSummaryOptions(Long projectId) {
+    public WorkSummaryOptionsDto getWorkSummaryOptions() {
         var userId = AuthService.getCurrentUserId();
-        List<WorkSummary> workSummaries;
-        if (projectId == null) {
-            workSummaries = workSummaryRepository.findWorkSummaryOptions(userId);
-        } else {
-            getProject(projectId, userId);
-            workSummaries = workSummaryRepository.findProjectWorkSummaryOptions(userId, projectId);
-        }
-        var options = workSummaries.stream()
-                .map(attendanceMapper::toWorkSummaryOption)
-                .collect(Collectors.toList());
+
+        var workSummaries =
+                workSummaryRepository.findWorkSummaryOptions(userId);
+
+        var options = new WorkSummaryOptionsDto();
+
+        options.setProjects(
+                workSummaries.stream()
+                        .map(WorkSummary::getProject)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .sorted(Comparator.comparing(
+                                Project::getCreatedAt,
+                                Comparator.nullsLast(Comparator.reverseOrder())
+                        ))
+                        .map(projectMapper::toDto)
+                        .toList()
+        );
+
+        options.setPeriods(
+                workSummaries.stream()
+                        .map(workSummary -> {
+                            var period = new WorkSummaryPeriodDto();
+                            period.setYear(workSummary.getYear());
+                            period.setMonth(workSummary.getMonth());
+                            return period;
+                        })
+                        .distinct()
+                        .sorted(
+                                Comparator
+                                        .comparing(
+                                                WorkSummaryPeriodDto::getYear,
+                                                Comparator.reverseOrder()
+                                        )
+                                        .thenComparing(
+                                                WorkSummaryPeriodDto::getMonth,
+                                                Comparator.reverseOrder()
+                                        )
+                        )
+                        .toList()
+        );
 
         return options;
     }

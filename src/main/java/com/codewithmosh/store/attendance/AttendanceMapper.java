@@ -19,6 +19,4 @@ public interface AttendanceMapper {
     WorkSummaryDto toWorkSummaryDto(WorkSummary workSummary);
 
     LabelDto toLabelDto(AttendanceLabel label);
-
-    WorkSummaryOption toWorkSummaryOption(WorkSummary workSummary);
 }

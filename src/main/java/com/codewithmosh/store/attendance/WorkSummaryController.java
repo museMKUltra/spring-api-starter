@@ -38,10 +38,8 @@ class WorkSummaryController {
     }
 
     @GetMapping("/options")
-    public ResponseEntity<List<WorkSummaryOption>> getWorkSummaryOptions(
-            @RequestParam(required = false) Long projectId
-    ) {
-        var options = attendanceService.getWorkSummaryOptions(projectId);
+    public ResponseEntity<WorkSummaryOptionsDto> getWorkSummaryOptions() {
+        var options = attendanceService.getWorkSummaryOptions();
 
         return ResponseEntity.ok(options);
     }
