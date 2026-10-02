@@ -424,7 +424,7 @@ class AttendanceService {
         var userId = AuthService.getCurrentUserId();
         getProject(projectId, userId);
 
-        return attendanceLabelRepository.getExistLabels(projectId)
+        return attendanceLabelRepository.getExistLabels(projectId, true)
                 .stream().map(attendanceMapper::toLabelDto).toList();
     }
 
@@ -488,7 +488,7 @@ class AttendanceService {
         label.setDeletedAt(Instant.now());
         label.setSortOrder(0);
 
-        var remainingLabels = attendanceLabelRepository.getExistLabels(label.getProject().getId());
+        var remainingLabels = attendanceLabelRepository.getExistLabels(label.getProject().getId(), false);
         for (int i = 0; i < remainingLabels.size(); i++) {
             remainingLabels.get(i).setSortOrder(i);
         }
