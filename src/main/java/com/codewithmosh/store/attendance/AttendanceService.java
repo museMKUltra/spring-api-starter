@@ -446,15 +446,16 @@ class AttendanceService {
         label.setSortOrder(nextSortOrder);
         label.setProject(project);
 
-        user.addAttendanceLabel(label);
         attendanceLabelRepository.save(label);
 
         return attendanceMapper.toLabelDto(label);
     }
 
-    public LabelDto updateLabel(Long id, String name, String color) {
+    public LabelDto updateLabel(Long projectId, Long id, String name, String color) {
         var userId = AuthService.getCurrentUserId();
-        var label = attendanceLabelRepository.getExistLabel(userId, id).orElse(null);
+        getProject(projectId, userId);
+
+        var label = attendanceLabelRepository.getExistLabel(projectId, id).orElse(null);
         if (label == null) {
             throw new LabelNotFoundException();
         }
@@ -476,10 +477,12 @@ class AttendanceService {
     }
 
     @Transactional
-    public void deleteLabel(Long id) {
+    public void deleteLabel(Long projectId, Long id) {
         var userId = AuthService.getCurrentUserId();
+        getProject(projectId, userId);
+
         var label = attendanceLabelRepository
-                .getExistLabel(userId, id)
+                .getExistLabel(projectId, id)
                 .orElseThrow(LabelNotFoundException::new);
 
         label.setDeletedAt(Instant.now());

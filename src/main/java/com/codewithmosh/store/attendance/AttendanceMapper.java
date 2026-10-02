@@ -18,5 +18,6 @@ public interface AttendanceMapper {
     @Mapping(source = "salaryAmount", target = "salaryAmount", defaultValue = "0")
     WorkSummaryDto toWorkSummaryDto(WorkSummary workSummary);
 
+    @Mapping(target = "isGlobal", source = "global")
     LabelDto toLabelDto(AttendanceLabel label);
 }

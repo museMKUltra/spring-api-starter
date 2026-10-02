@@ -1,7 +1,6 @@
 package com.codewithmosh.store.attendance;
 
 import com.codewithmosh.store.projects.Project;
-import com.codewithmosh.store.users.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,10 +33,6 @@ public class AttendanceLabel {
     private Set<AttendanceSession> attendanceSessions = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private Project project;
 
@@ -46,4 +41,8 @@ public class AttendanceLabel {
 
     @Column(name = "sort_order")
     private Integer sortOrder;
+
+    public boolean isGlobal() {
+        return project == null;
+    }
 }

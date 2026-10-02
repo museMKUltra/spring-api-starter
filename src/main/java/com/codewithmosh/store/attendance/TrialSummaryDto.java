@@ -70,7 +70,7 @@ public class TrialSummaryDto {
     }
 
     private boolean isCountableSession(AttendanceSession s) {
-        var isGlobalLabel = s.getLabel() != null && s.getLabel().getUser() == null;
+        var isGlobalLabel = s.getLabel() != null && s.getLabel().isGlobal();
 
         return s.getStatus() == SessionStatus.COMPLETED && !isGlobalLabel;
     }
@@ -118,7 +118,7 @@ public class TrialSummaryDto {
             var labelDto = labelMap.computeIfAbsent(labelId, id -> {
                 var labelName = label == null ? "" : label.getName();
                 var labelColor = label == null ? "" : label.getColor();
-                var isGlobal = (label != null) && (label.getUser() == null);
+                var isGlobal = (label != null) && (label.isGlobal());
 
                 return new TrialSummaryLabelDto(labelId, labelName, labelColor, 0L, isGlobal);
             });

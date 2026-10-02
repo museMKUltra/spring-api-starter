@@ -111,19 +111,23 @@ class AttendanceController {
         return ResponseEntity.created(uri).body(labelDto);
     }
 
-    @PutMapping("/labels/{id}")
+    @PutMapping("/projects/{projectId}/labels/{id}")
     public ResponseEntity<LabelDto> updateLabel(
+            @PathVariable Long projectId,
             @PathVariable Long id,
             @Valid @RequestBody UpdateLabelRequest request
     ) {
-        var labelDto = attendanceService.updateLabel(id, request.getName(), request.getColor());
+        var labelDto = attendanceService.updateLabel(projectId, id, request.getName(), request.getColor());
 
         return ResponseEntity.ok(labelDto);
     }
 
-    @DeleteMapping("/labels/{id}")
-    public ResponseEntity<Void> deleteLabel(@PathVariable Long id) {
-        attendanceService.deleteLabel(id);
+    @DeleteMapping("/projects/{projectId}/labels/{id}")
+    public ResponseEntity<Void> deleteLabel(
+            @PathVariable Long projectId,
+            @PathVariable Long id
+    ) {
+        attendanceService.deleteLabel(projectId, id);
 
         return ResponseEntity.noContent().build();
     }

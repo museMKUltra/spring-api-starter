@@ -68,9 +68,6 @@ public class User {
     private Set<WorkSummary> workSummaries = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private Set<AttendanceLabel> attendanceLabel = new HashSet<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<AttendanceSession> attendanceSessions = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -106,11 +103,6 @@ public class User {
     public void addWorkSummary(WorkSummary summary) {
         workSummaries.add(summary);
         summary.setUser(this);
-    }
-
-    public void addAttendanceLabel(AttendanceLabel label) {
-        attendanceLabel.add(label);
-        label.setUser(this);
     }
 
     public void addProject(Project project) {
