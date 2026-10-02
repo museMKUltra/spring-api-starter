@@ -10,14 +10,6 @@ ON p.user_id = al.user_id
     AND p.name = 'Default'
     SET al.project_id = p.id;
 
--- Make sure every existing label has been migrated.
--- If this fails, investigate before continuing.
--- This is intentionally omitted as a SQL assertion because
--- MySQL does not provide a simple migration assertion mechanism.
-
-ALTER TABLE attendance_label
-    MODIFY COLUMN project_id BIGINT UNSIGNED NOT NULL;
-
 ALTER TABLE attendance_label
     ADD CONSTRAINT fk_label_project
         FOREIGN KEY (project_id) REFERENCES projects (id)
