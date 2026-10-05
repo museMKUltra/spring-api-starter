@@ -8,8 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @AllArgsConstructor
 @RestController
 @RequestMapping("/work-summary")
@@ -31,7 +29,7 @@ class WorkSummaryController {
     public ResponseEntity<Page<WorkSummaryDto>> getWorkSummaries(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Long projectId
+            @RequestParam(defaultValue = "0") Long projectId
     ) {
         var result = attendanceService.getWorkSummaries(page, size, projectId);
         return ResponseEntity.ok(result);

@@ -556,7 +556,7 @@ class AttendanceService {
         var userId = AuthService.getCurrentUserId();
         var pageable = PageRequest.of(page, size);
         Page<WorkSummary> workSummaries;
-        if (projectId == null) {
+        if (projectId == 0) {
             workSummaries = workSummaryRepository.findWorkSummariesPaged(userId, pageable);
         } else {
             getProject(projectId, userId);
