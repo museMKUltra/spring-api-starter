@@ -1,5 +1,6 @@
 package com.codewithmosh.store.attendance;
 
+import com.codewithmosh.store.projects.ProjectDto;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -13,4 +14,5 @@ public class WorkSummaryDto {
     private SummaryStatus status;
     private BigDecimal hourlyRate;
     private BigDecimal salaryAmount;
+    private ProjectDto project;
 }

@@ -1,5 +1,6 @@
 package com.codewithmosh.store.attendance;
 
+import com.codewithmosh.store.projects.Project;
 import com.codewithmosh.store.users.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,6 +24,10 @@ public class AttendanceSession {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     @ManyToOne
     @JoinColumn(name = "label_id")
@@ -54,9 +59,10 @@ public class AttendanceSession {
         return Instant.now().truncatedTo(ChronoUnit.SECONDS);
     }
 
-    public static AttendanceSession createSession(User user, CreateSessionRequest request) {
+    public static AttendanceSession createSession(User user, Project project, CreateSessionRequest request) {
         var session = new AttendanceSession();
         session.setUser(user);
+        session.setProject(project);
         session.setClockIn(request.getClockIn());
         session.setWorkDate(new AttendanceTime(request.getClockIn()).getDateInZone());
         session.setClockOut(request.getClockOut());
@@ -66,10 +72,11 @@ public class AttendanceSession {
         return session;
     }
 
-    public static AttendanceSession createClockInSession(User user) {
+    public static AttendanceSession createClockInSession(User user, Project project) {
         var clockTime = getClockTime();
         var session = new AttendanceSession();
         session.setUser(user);
+        session.setProject(project);
         session.setClockIn(clockTime);
         session.setWorkDate(new AttendanceTime(clockTime).getDateInZone());
         session.setStatus(SessionStatus.ACTIVE);

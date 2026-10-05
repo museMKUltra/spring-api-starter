@@ -1,6 +1,6 @@
 package com.codewithmosh.store.attendance;
 
-import com.codewithmosh.store.users.User;
+import com.codewithmosh.store.projects.Project;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,12 +33,16 @@ public class AttendanceLabel {
     private Set<AttendanceSession> attendanceSessions = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
     @Column(name = "sort_order")
     private Integer sortOrder;
+
+    public boolean isGlobal() {
+        return project == null;
+    }
 }

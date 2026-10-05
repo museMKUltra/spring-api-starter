@@ -5,6 +5,7 @@ import com.codewithmosh.store.attendance.AttendanceSession;
 import com.codewithmosh.store.attendance.EmployeeRate;
 import com.codewithmosh.store.attendance.WorkSummary;
 import com.codewithmosh.store.products.Product;
+import com.codewithmosh.store.projects.Project;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -67,10 +68,10 @@ public class User {
     private Set<WorkSummary> workSummaries = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private Set<AttendanceLabel> attendanceLabel = new HashSet<>();
+    private Set<AttendanceSession> attendanceSessions = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private Set<AttendanceSession> attendanceSessions = new HashSet<>();
+    private Set<Project> projects = new HashSet<>();
 
     public void addAddress(Address address) {
         addresses.add(address);
@@ -104,9 +105,9 @@ public class User {
         summary.setUser(this);
     }
 
-    public void addAttendanceLabel(AttendanceLabel label) {
-        attendanceLabel.add(label);
-        label.setUser(this);
+    public void addProject(Project project) {
+        projects.add(project);
+        project.setUser(this);
     }
 
     public boolean isGuestExpired() {
