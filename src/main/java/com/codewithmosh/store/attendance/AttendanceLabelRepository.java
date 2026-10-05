@@ -16,8 +16,8 @@ public interface AttendanceLabelRepository extends JpaRepository<AttendanceLabel
     @Query("select a from AttendanceLabel a where a.project.id = :projectId and a.id = :id and a.deletedAt is null")
     Optional<AttendanceLabel> getExistLabel(@Param("projectId") Long projectId, @Param("id") Long id);
 
-    @Query("select a from AttendanceLabel a where a.project.id = :projectId and a.id = :id and a.deletedAt is null")
-    Optional<AttendanceLabel> getExistProjectLabel(@Param("projectId") Long projectId, @Param("id") Long id);
+    @Query("select a from AttendanceLabel a where (a.project.id = :projectId or a.project is null) and a.id = :id and a.deletedAt is null")
+    Optional<AttendanceLabel> getExistProjectOrGlobalLabel(@Param("projectId") Long projectId, @Param("id") Long id);
 
     @Query("select (count(a) > 0) from AttendanceLabel a where a.project.id = :projectId and a.name = :name and a.deletedAt is null")
     boolean existsByName(@Param("projectId") Long projectId, @Param("name") String name);

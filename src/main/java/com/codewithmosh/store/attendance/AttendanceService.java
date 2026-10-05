@@ -310,7 +310,7 @@ class AttendanceService {
         }
 
         var label = attendanceLabelRepository
-                .getExistProjectLabel(session.getProject().getId(), labelId)
+                .getExistProjectOrGlobalLabel(session.getProject().getId(), labelId)
                 .orElseThrow(LabelNotFoundException::new);
         session.setLabel(label);
     }
