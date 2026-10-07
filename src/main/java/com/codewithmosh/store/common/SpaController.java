@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class SpaController {
-    @RequestMapping(value = "/{path:^(?!api).*}")
+    @RequestMapping(value = "{path:[^\\.]*}")
     public String redirect() {
         // Forward to home page so React Router can take over
         return "forward:/index.html";
